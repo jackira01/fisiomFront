@@ -1,10 +1,16 @@
 import { BASE_URL } from '@/utils/api';
+import axios from 'axios';
 
 export const getTypes = async () => {
-  const res = await fetch(`${BASE_URL}/types`, {
+  const { data, status } = await axios.get(`${BASE_URL}/types`, {
     method: 'GET',
     cache: 'no-cache',
+    withCredentials: true,
   });
-  if (!res.ok) throw new Error('Error fetching types');
-  return await res.json();
+
+  if (status !== 200) {
+    throw new Error('Error fetching types');
+  }
+
+  return data;
 };

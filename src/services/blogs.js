@@ -1,4 +1,5 @@
 import { BASE_URL } from '@/utils/api';
+import axios from 'axios';
 
 export const getBlogs = async ({
   page = 1,
@@ -15,13 +16,13 @@ export const getBlogs = async ({
   if (sortBy && order) query += `&sortBy=${sortBy}&order=${order}`;
   if (status) query += `&status=${status}`;
 
-  const res = await fetch(`${BASE_URL}/blogs${query}`, {
-    method: 'GET',
+  const res = await axios.get(`${BASE_URL}/blogs${query}`, {
+    withCredentials: true,
     next: { revalidate: 20 }, // ? Revalidate last blogs after 20 seconds
   });
-  if (!res.ok) throw new Error('Error fetching blogs');
+  if (res.status !== 200) throw new Error('Error fetching blogs');
 
-  return await res.json();
+  return res.data;
 };
 
 export const getProfessionalBlogs = async (
@@ -30,52 +31,44 @@ export const getProfessionalBlogs = async (
 ) => {
   let query = `?page=${page}&limit=${limit}`;
 
-  const res = await fetch(`${BASE_URL}/blogs/${professionalId}${query}`, {
-    method: 'GET',
+  const { data, status } = await axios.get(`${BASE_URL}/blogs/${professionalId}${query}`, {
     credentials: 'include',
     next: { revalidate: 60 },
   });
-  if (!res.ok) throw new Error('Error fetching blogs');
+  if (status !== 200) throw new Error('Error fetching blogs');
 
-  return await res.json();
+  return data;
 };
 
 export const getBlogDetail = async (blogId) => {
-  const res = await fetch(`${BASE_URL}/blogs/detail/${blogId}`, {
-    method: 'GET',
+  const { data, status } = await axios.get(`${BASE_URL}/blogs/detail/${blogId}`, {
     cache: 'no-cache',
   });
-  return await res.json();
+  if (status !== 200) throw new Error('Error fetching blogs');
+  return data;
 };
 
 export const createBlog = async (newBlog) => {
-  const res = await fetch(`${BASE_URL}/blogs/create`, {
-    method: 'POST',
-    credentials: 'include',
-    body: newBlog,
+  const { data, status } = await axios.post(`${BASE_URL}/blogs/create`, newBlog, {
+    withCredentials: true,
   });
-  if (!res.ok) throw new Error('Error creating blog');
-  return await res.json();
+  if (status !== 200) throw new Error('Error fetching blogs');
+  return data;
 };
 
 export const updateBlog = async (blogId, updatedBlog) => {
-  const res = await fetch(`${BASE_URL}/blogs/update/${blogId}`, {
-    method: 'PUT',
-    credentials: 'include',
-    body: updatedBlog,
+  const { data, status } = await axios.put(`${BASE_URL}/blogs/update/${blogId}`, updatedBlog, {
+    withCredentials: true,
   });
-  if (!res.ok) throw new Error('Error updating blog');
-  return await res.json();
+  if (status !== 200) throw new Error('Error fetching blogs');
+  return data;
 };
 
 // ? Logic delete
 export const deleteBlog = async (blogId) => {
-  const res = await fetch(`${BASE_URL}/blogs/status/${blogId}`, {
-    method: 'PATCH',
-    credentials: 'include',
-    body: JSON.stringify({ status: false }),
-    headers: { 'Content-Type': 'application/json' },
+  const { data, status } = await axios.patch(`${BASE_URL}/blogs/status/${blogId}`, { status: false }, {
+    withCredentials: true,
   });
-  if (!res.ok) throw new Error('Error deleting blog');
-  return await res.json();
+  if (status !== 200) throw new Error('Error fetching blogs');
+  return data;
 };
