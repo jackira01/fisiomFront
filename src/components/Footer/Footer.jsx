@@ -26,14 +26,14 @@ function Footer() {
           <CustomLogo width={200} />
           <div className="flex justify-center gap-4">
             {socialItems.map((item, index) => (
-              <Link
+              <a
                 key={index}
                 href={item.href}
                 target="_blank"
                 rel="noreferrer noopener"
               >
                 <item.icon className="text-2xl" />
-              </Link>
+              </a>
             ))}
           </div>
         </div>
