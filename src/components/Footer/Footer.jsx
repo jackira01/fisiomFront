@@ -7,9 +7,9 @@ import {
 } from "react-icons/ai";
 
 const socialItems = [
-  { icon: AiOutlineFacebook, href: "/" },
-  { icon: AiOutlineInstagram, href: "/" },
-  { icon: AiOutlineLinkedin, href: "/" },
+  { icon: AiOutlineFacebook, href: "https://www.facebook.com/share/19c2x367Cv/" },
+  { icon: AiOutlineInstagram, href: "https://www.instagram.com/fisiom_fulness?igsh=MWVmZ3pqYXY5bmZuag==" },
+  { icon: AiOutlineLinkedin, href: "https://www.linkedin.com/company/fisio-fulness/" },
 ];
 
 const navItems = [
