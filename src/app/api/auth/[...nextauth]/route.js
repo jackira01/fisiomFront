@@ -45,7 +45,13 @@ export const authOptions = {
               .map((v) => v.split(/=(.*)/s).map(decodeURIComponent))
           );
 
-          console.log('Valores de accessToken:', accessTokenValues);
+          // console.log('Valores de accessToken:', accessTokenValues);
+
+          const refreshTokenValues = Object.fromEntries(
+            (headerCookies.find((c) => c.includes('refreshToken=')) || '')
+              .split('; ')
+              .map((v) => v.split(/=(.*)/s).map(decodeURIComponent))
+          );
 
           cookies().set({
             name: 'accessToken',
@@ -54,6 +60,16 @@ export const authOptions = {
             secure: process.env.NEXT_PUBLIC_ENV === 'production',
             sameSite: 'strict',
             maxAge: accessTokenValues['Max-Age'],
+            path: '/',
+          });
+
+          cookies().set({
+            name: 'refreshToken',
+            value: refreshTokenValues.refreshToken,
+            httpOnly: true,
+            secure: process.env.NEXT_PUBLIC_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: refreshTokenValues['Max-Age'],
             path: '/',
           });
 
@@ -76,18 +92,17 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      console.log('Callback jwt: ', { token, user }); // Log para ver los valores de token y user
-  
+   
       if (user) {
         token.name = user.name || '';  
         token.image = user.image || ''; 
       }
   
-      console.log('Token después de modificación: ', token); // Log para ver el token después de la modificación
+      // console.log('Token después de modificación: ', token); // Log para ver el token después de la modificación
       return token;
     },
     async session({ session, token }) {
-      console.log('Callback session: ', { session, token }); // Log para ver los valores de session y token
+      // console.log('Callback session: ', { session, token }); // Log para ver los valores de session y token
   
       session.user = token; 
 
@@ -98,6 +113,7 @@ export const authOptions = {
   events: {
     async signOut() {
       cookies().delete('accessToken');
+      cookies().delete('refreshToken');
     },
   },
 };
