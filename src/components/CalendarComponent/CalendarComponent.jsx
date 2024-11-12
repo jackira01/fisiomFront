@@ -86,12 +86,13 @@ export default function CalendarComponent({ user, isAuth }) { // user solo conti
 
     // Check if the date range already exists in the cache
     if (!isRangeInCache(from, to) && from !== to) {
-      fetchData(id, from, to);
+      fetchData(user.sub, from, to);
       setCachedData((prevCachedData) => [
         ...prevCachedData,
         { from, to }, // `data` can be populated when `fetchData` completes
       ]);
     } else {
+      fetchData(user.sub, from, to);
       return;
     }
   }, [calendarState.dateFromTo, session?.user]);

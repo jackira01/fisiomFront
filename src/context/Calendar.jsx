@@ -66,14 +66,20 @@ export const CalendarProvider = ({ children }) => {
   });
 
   const fetchData = async (_id, from, to) => {
+    if (!_id || !from || !to) {
+      console.error("Faltan parámetros necesarios para hacer la solicitud.");
+      setCalendarIsLoading(false);
+      return;
+  }
     setCalendarIsLoading(true);
     try {
       const responseAppointments = await getAppointment(_id, from, to);
-      const newEvents = filterAppointments(
-        responseAppointments.data.appointments,
-      );
+      console.log(responseAppointments, "responseApointments")
+      const newEvents = filterAppointments(responseAppointments.data.appointments);
+      console.log(newEvents, "newEvents")
 
       const responseAvailability = await getAvailability(_id);
+
 
       setCalendarState((prevState) => ({
         ...prevState,

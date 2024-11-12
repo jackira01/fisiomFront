@@ -8,7 +8,6 @@ export const getAppointment = async (_id, from, to) => {
     try {
         const response = await axios.get(
             `${BASE_URL}/appointments/?from=${from}&to=${to}&_professional=${_id}`,)
-
         return response
     } catch (error) {
         return error
