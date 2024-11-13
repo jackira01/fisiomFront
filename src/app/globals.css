@@ -37,7 +37,7 @@
   }
 
   .htmlField {
-    @apply break-words
+    @apply break-words;
   }
 
   .htmlField > ul,
@@ -75,4 +75,38 @@
     @apply bg-zinc-300;
     @apply rounded-full;
   }
+}
+
+/* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-out-down {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.3s ease-out;
+}
+
+.animate-fade-out-down {
+  animation: fade-out-down 0.3s ease-out;
 }

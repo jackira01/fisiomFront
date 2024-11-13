@@ -38,3 +38,6 @@ next-env.d.ts
 ## Panda
 styled-system
 styled-system-studio
+
+# Ignorar package-lock.json para evitar bloquear versiones específicas de dependencias
+package-lock.json

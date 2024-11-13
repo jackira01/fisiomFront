@@ -90,7 +90,7 @@ const CitaDomiciliaria = () => {
 
   const [filters, setFilters] = useAtom(filtersAtom);
   const [localSpecialtyId, setLocalSpecialtyId] = useState(
-    /** @type {string} */ filters.specialtyId
+    /** @type {string} */ filters.specialtyId,
   );
   const cityId = ciudades.find((city) => city.name === filters.city)?.id || "";
   const [localCityId, setLocalCityId] = useState(/** @type {string} */ cityId);
@@ -206,7 +206,7 @@ export default function HomeClient() {
 
   // NOTE: https://github.com/microsoft/TypeScript/issues/27387
   const [selected, setSelected] = useState(
-    /** @type {Key} */ ("citaDomiciliaria")
+    /** @type {Key} */ ("citaDomiciliaria"),
   );
 
   return (
