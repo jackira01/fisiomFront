@@ -52,7 +52,7 @@ export const AvailabilityModal = memo(() => {
               onClick={(e) => setIsCreateUpdate("update")}
               color="primary"
             >
-              Actulizar
+              Actualizar
             </Button>
           ) : isCreateUpdate === "update" ? (
             <Button

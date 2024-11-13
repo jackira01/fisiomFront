@@ -36,7 +36,6 @@ export const weekDays = [
   { label: "Sábado", value: "sábado" },
   { label: "Domingo", value: "domingo" },
 ];
-
 export const CreateForm = () => {
   const { calendarState, setCalendarState } = useContext(CalendarContext);
   const { data: session } = useSession();
@@ -44,13 +43,13 @@ export const CreateForm = () => {
   const [valueDay, setValueDay] = useState("lunes");
   const [startEndHour, setStartEndHour] = useState(["10:00", "12:00"]);
   const [formSchedule, setFormSchedule] = useState({});
-
+  
   const findAvailability = (day) => {
     const filterSchedule = availability.filter(
       (schedule) => schedule.day === day,
     );
     setFormSchedule({
-      userId: session.user.id,
+      userId: session.user.sub,
       availability: filterSchedule,
     });
   };
