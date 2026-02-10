@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { SearchProd } from '@/components/productos/SearchProd';
 import ProductCardContainer from '@/components/productos/ProductCardContainer';
 import Paginate from '@/components/Paginate/Paginate';
+import CatalogMaintenanceMessage from '@/components/productos/CatalogMaintenanceMessage';
 import { apiEndpoints } from '@/api_endpoints';
 import axios from 'axios';
 
@@ -16,7 +17,13 @@ const ProductosPageClient = () => {
     name: '',
   });
 
+  // Leer variable de entorno para controlar visibilidad del catálogo
+  const catalogEnabled = process.env.NEXT_PUBLIC_CATALOG_ENABLED === 'true';
+
   useEffect(() => {
+    // Solo hacer la petición si el catálogo está habilitado
+    if (!catalogEnabled) return;
+
     const abortController = new AbortController();
     axios
       .get(apiEndpoints.products, {
@@ -36,8 +43,18 @@ const ProductosPageClient = () => {
         throw err;
       });
     return () => abortController.abort();
-  }, [filter, page]);
+  }, [filter, page, catalogEnabled]);
 
+  // Si el catálogo está deshabilitado, mostrar mensaje de mantenimiento
+  if (!catalogEnabled) {
+    return (
+      <main className="vstack px-auto mx-auto max-w-8xl w-full items-center gap-6 my-5">
+        <CatalogMaintenanceMessage />
+      </main>
+    );
+  }
+
+  // Si el catálogo está habilitado, mostrar la lista de productos
   return (
     <main className="vstack px-auto mx-auto max-w-8xl w-full items-center gap-6 my-5">
       <SearchProd filter={filter} setFilter={setFilter} setPage={setPage} />
