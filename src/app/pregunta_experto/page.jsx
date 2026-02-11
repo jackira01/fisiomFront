@@ -11,11 +11,16 @@ const LIMIT_QUESTIONS = 10;
 const iniQuery = { limit: LIMIT_QUESTIONS };
 
 const getSpecialties = async () => {
-  const res = await fetch(apiEndpoints.specialties, {
-    method: 'GET',
-  });
-  if (!res.ok) throw new Error('Error obteniendo especialidades');
-  return await res.json();
+  try {
+    const res = await fetch(apiEndpoints.specialties, {
+      method: 'GET',
+    });
+    if (!res.ok) throw new Error('Error obteniendo especialidades');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching specialties:', error.message);
+    return { results: [] };
+  }
 };
 
 const PreguntaExpertoPage = async () => {

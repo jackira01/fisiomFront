@@ -16,13 +16,17 @@ export const getBlogs = async ({
   if (sortBy && order) query += `&sortBy=${sortBy}&order=${order}`;
   if (status) query += `&status=${status}`;
 
-  const res = await axios.get(`${BASE_URL}/blogs${query}`, {
-    withCredentials: true,
-    next: { revalidate: 20 }, // ? Revalidate last blogs after 20 seconds
-  });
-  if (res.status !== 200) throw new Error('Error fetching blogs');
-
-  return res.data;
+  try {
+    const res = await axios.get(`${BASE_URL}/blogs${query}`, {
+      withCredentials: true,
+      next: { revalidate: 20 }, // ? Revalidate last blogs after 20 seconds
+    });
+    if (res.status !== 200) throw new Error('Error fetching blogs');
+    return res.data;
+  } catch (error) {
+    console.error('Error fetching blogs:', error.message);
+    return { blogs: [], totalBlogs: 0, hasMoreToLoad: false, totalPages: 0 };
+  }
 };
 
 export const getProfessionalBlogs = async (

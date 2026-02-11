@@ -9,12 +9,17 @@ export const getQuestions = async ({
   let query = `?offset=${offset}&limit=${limit}`;
   if (specialtyId && specialtyId !== '1') query += `&specialtyId=${specialtyId}`;
   if (search && search != '') query += `&search=${search}`;
-  const res = await fetch(`${BASE_URL}/questions${query}`, {
-    method: 'GET',
-    cache: 'no-cache',
-  });
-  if (!res.ok) throw new Error('Error obteniendo preguntas');
-  return await res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/questions${query}`, {
+      method: 'GET',
+      cache: 'no-cache',
+    });
+    if (!res.ok) throw new Error('Error obteniendo preguntas');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching questions:', error.message);
+    return { questions: [], totalQuestions: 0, hasMoreToLoad: false };
+  }
 };
 
 export const createQuestion = async (values) => {
