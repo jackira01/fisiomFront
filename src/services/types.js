@@ -19,3 +19,20 @@ export const getTypes = async () => {
     return { types: [] };
   }
 };
+
+export const getSpecialties = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/types`, {
+      withCredentials: true,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Error fetching specialties');
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching specialties:', error.message);
+    throw error;
+  }
+};

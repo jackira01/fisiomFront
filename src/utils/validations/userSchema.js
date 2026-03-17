@@ -20,6 +20,7 @@ const userInitialValues = {
   streetName: "",
   streetNumber: "",
   floorAppartment: "", // ? Opcional
+  additionalInfo: "", // ? Opcional - Datos informativos (no se pasa a API geocodificación)
   city: "",
   state: "", // ? Opcional
   country: "",
@@ -66,6 +67,12 @@ const userSchema = z
       .string()
       .max(5, "No puede tener mas de 5 dígitos")
       .regex(numericRegex, "Debe ser numérico")
+      .optional()
+      .or(z.literal("")),
+    additionalInfo: z
+      .string()
+      .trim()
+      .max(100, "No puede tener mas de 100 caracteres")
       .optional()
       .or(z.literal("")),
     city: zodStrRequired()

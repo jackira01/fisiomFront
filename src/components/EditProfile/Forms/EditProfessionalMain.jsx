@@ -41,6 +41,7 @@ const EditProfessionalMain = ({
     streetName: address?.streetName || "",
     streetNumber: address?.streetNumber || "",
     floorAppartment: address?.floorAppartment || "",
+    additionalInfo: address?.additionalInfo || "",
     city: address?.city || "",
     state: address?.state || "",
     country: address?.country || "",

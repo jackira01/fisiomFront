@@ -27,13 +27,27 @@ const CustomMap = ({ markers, setMarkers, user, toggle }) => {
   const location = useGeolocation();
   const pathname = usePathname();
 
+  // Calculate center based on first valid marker or default to user location
+  const getCenter = () => {
+    if (markers.length > 0 && markers[0]?.coordinates) {
+      return {
+        lat: markers[0].coordinates[0] || 0,
+        lng: markers[0].coordinates[1] || 0,
+      };
+    }
+    if (location?.user && location.user.length === 2) {
+      return {
+        lat: location.user[0],
+        lng: location.user[1],
+      };
+    }
+    return { lat: 0, lng: 0 }; // Default center
+  };
+
   if (markers.length) {
     return (
       <MapContainer
-        center={{
-          lat: markers[0]?.coordinates[0] || 0,
-          lng: markers[0]?.coordinates[1] || 0,
-        }}
+        center={getCenter()}
         zoom={15}
         zoomControl={false}
         scrollWheelZoom={true}
@@ -63,7 +77,15 @@ const CustomMap = ({ markers, setMarkers, user, toggle }) => {
         ) : null}
         {markers?.map((e, i) => {
           return (
-            <Marker key={i} position={e.coordinates} icon={customIcon}>
+            <Marker 
+              key={i} 
+              position={
+                Array.isArray(e.coordinates) && e.coordinates.length === 2
+                  ? e.coordinates
+                  : [0, 0]
+              } 
+              icon={customIcon}
+            >
               {/* <Popup>
                 <ServicioMainCardSmall profesional={e} />
               </Popup> */}

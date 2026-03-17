@@ -4,8 +4,7 @@ import { useAtom } from "jotai";
 import { filtersAtom } from "../store/servicios";
 import { AiFillHome } from "react-icons/ai";
 import { FaBriefcaseMedical } from "react-icons/fa6";
-import { apiEndpoints } from "@/api_endpoints";
-import axios from "axios";
+import { getSpecialties } from "@/services/types";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
 export default function SearchSpecialty() {
@@ -14,17 +13,18 @@ export default function SearchSpecialty() {
 
   useEffect(() => {
     const abortController = new AbortController();
-    axios
-      .get(apiEndpoints.specialties, {
-        signal: abortController.signal,
-      })
-      .then(({ data }) => {
-        setSpecialties(data.results);
-      })
-      .catch((err) => {
-        if (err.name === "CanceledError") return;
-        throw err;
-      });
+    
+    const fetchSpecialties = async () => {
+      try {
+        const data = await getSpecialties();
+        setSpecialties(data.types || []);
+      } catch (error) {
+        if (error.name === "CanceledError") return;
+        console.error('Error fetching specialties:', error);
+      }
+    };
+    
+    fetchSpecialties();
     return () => abortController.abort();
   }, []);
 

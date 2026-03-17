@@ -12,7 +12,13 @@ import {
 import { listInputsUser } from "./listInputs";
 import toast from "react-hot-toast";
 
-export function RegisterProfessional({ conditionsAccepted }) {
+export function RegisterProfessional({
+  conditionsAccepted,
+  aceptoCondiciones,
+  setAceptoCondiciones,
+  recibirInformacion,
+  setRecibirInformacion,
+}) {
   const router = useRouter();
 
   const handleSubmitRegister = async (values, { resetForm }) => {
@@ -21,18 +27,30 @@ export function RegisterProfessional({ conditionsAccepted }) {
       return;
     }
 
+    // Preservar lat/lng antes de eliminar valores falsy (0 es falsy en JS)
+    const { latitude, longitude } = values;
     values = removeObjFalsyValues(values);
     const formData = getFormdataFromObj(values);
+    // set() sobrescribe si ya existe o crea la entrada, garantizando un único valor por campo
+    if (latitude != null) formData.set("latitude", latitude);
+    if (longitude != null) formData.set("longitude", longitude);
 
     try {
+      // Esperar a que el registro se complete
       await axiosRegisterProfessionalForm(formData);
-      toast.success("Te has registrado, está pendiente de aprobación.");
-    } catch (error) {
-      toast.error("Error al registrarse. Intente nuevamente.");
-    }
 
-    resetForm();
-    router.push("/login");
+      // Si llegamos aquí, el registro fue exitoso
+      resetForm();
+
+      // Esperar un poco para que el toast de éxito se muestre antes de redirigir
+      setTimeout(() => {
+        router.push("/login");
+      }, 1500);
+    } catch (error) {
+      // El error ya fue manejado por el toast.promise, 
+      // pero capturamos aquí para evitar que se lance una excepción sin manejo
+      console.error("Error en registro profesional:", error);
+    }
   };
 
   return (
@@ -41,11 +59,15 @@ export function RegisterProfessional({ conditionsAccepted }) {
       initialValues={professionalInitialValues}
       validate={formikZodValidator(professionalSchema)}
     >
-      <Form className="flex flex-col gap-2 w-full overflow-hidden min-[480px]:w-[90%]">
+      <Form className="flex flex-col gap-2 w-full">
         <InputsFormRegister
           isProfessional={true}
           submitButtonMessage={"Crear perfil"}
           listInputsValue={listInputsUser}
+          aceptoCondiciones={aceptoCondiciones}
+          setAceptoCondiciones={setAceptoCondiciones}
+          recibirInformacion={recibirInformacion}
+          setRecibirInformacion={setRecibirInformacion}
         />
       </Form>
     </Formik>

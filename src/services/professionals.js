@@ -3,6 +3,57 @@ import { BASE_URL } from '@/utils/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+export const getProfessionals = async (filters = {}) => {
+  try {
+    const {
+      search = '',
+      city = '',
+      specialtyId = '',
+      position = '',
+      page = 1,
+    } = filters;
+
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (city) params.append('city', city);
+    if (specialtyId) params.append('specialtyId', specialtyId);
+    if (position) params.append('position', position);
+    params.append('page', page);
+
+    const response = await axios.get(
+      `${BASE_URL}/users?${params.toString()}`,
+      { withCredentials: true }
+    );
+    
+    // Filter only professional users and transform data to match frontend expectations
+    const transformedUsers = (response.data.users || [])
+      .filter(user => user.role === 'professional')
+      .map(user => ({
+      ...user,
+      name: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
+      specialties: [], // Placeholder - add relationship later
+      address: {
+        city: user.city || '',
+        state: user.state || '',
+        country: user.country || '',
+      },
+      rating: {
+        average: 0, // Placeholder - add rating calculation later
+      },
+      consultationPrice: user.consultationPrice || '-',
+      coordinates: [user.latitud || 0, user.longitud || 0], // For map display
+    }));
+
+    return {
+      ...response.data,
+      users: transformedUsers,
+    };
+  } catch (error) {
+    console.error('Error fetching professionals:', error);
+    throw error;
+  }
+};
+
 export const getProfessionalDetail = async (professionalId) => {
   try {
     const response = await axios.get(

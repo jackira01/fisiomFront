@@ -14,6 +14,7 @@
     "@mui/material": "^6.0.2",
     "@nextui-org/react": "2.4.1",
     "@react-aria/i18n": "^3.11.1",
+    "@react-google-maps/api": "^2.20.8",
     "@tiptap/extension-character-count": "^2.4.0",
     "@tiptap/extension-underline": "^2.4.0",
     "@tiptap/pm": "^2.4.0",

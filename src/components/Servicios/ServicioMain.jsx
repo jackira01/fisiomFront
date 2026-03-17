@@ -1,6 +1,5 @@
 "use client";
 
-import axios from "axios";
 import { useState, useEffect, useRef } from "react";
 import { useAtom } from "jotai";
 import { filtersAtom } from "./store/servicios";
@@ -8,7 +7,7 @@ import useGeolocation from "@/hooks/useGeolocation";
 import ServicioMainContainer from "./ServicioMainContainer";
 import SearchProfesional from "./SearchProfesional/SearchProfesional";
 import dynamic from "next/dynamic";
-import { apiEndpoints } from "@/api_endpoints";
+import { getProfessionals } from "@/services/professionals";
 import { useInView } from "framer-motion";
 import Loader from "../Loader";
 
@@ -32,28 +31,26 @@ const ServicioMain = () => {
   useEffect(() => {
     const abortController = new AbortController();
     setLoading(true);
-    axios
-      .get(apiEndpoints.professionals, {
-        signal: abortController.signal,
-        params: {
-          search: encodeURIComponent(filters.search.join(",")),
+    
+    const fetchProfessionals = async () => {
+      try {
+        const data = await getProfessionals({
+          search: filters.search.join(","),
           city: filters.city,
           specialtyId: filters.specialtyId,
           position: location.user.join(","),
           page: filters.page,
-        },
-        withCredentials: true,
-      })
-      .then(({ data }) => {
+        });
+        
         if (filters.page === 1) {
-          setProfessionals(data.professionals);
+          setProfessionals(data.users || []);
           setToggle((prev) => !prev);
         } else {
           setProfessionals((prev) => {
             const professionalsMap = new Map(
               [...prev].map((item) => [item._id, item])
             );
-            data.professionals.forEach((professional) => {
+            (data.users || []).forEach((professional) => {
               if (!professionalsMap.has(professional._id)) {
                 professionalsMap.set(professional._id, professional);
               }
@@ -61,14 +58,16 @@ const ServicioMain = () => {
             return Array.from(professionalsMap.values());
           });
         }
-        setTotalPages(data.totalPages);
-      })
-      .catch((err) => {
-        if (err.name === "CanceledError") return;
-        throw err;
-      })
-      .finally(setLoading(false));
+        setTotalPages(data.totalPages || 1);
+      } catch (error) {
+        if (error.name === "CanceledError") return;
+        console.error('Error fetching professionals:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchProfessionals();
     return () => abortController.abort();
   }, [filters, location]);
 
@@ -76,7 +75,7 @@ const ServicioMain = () => {
     isInView &&
       filters.page < totalPages &&
       setFilters((prev) => ({ ...prev, page: prev.page + 1 }));
-  }, [isInView]);
+  }, [isInView, filters.page, totalPages, setFilters]);
 
   return (
     <main

@@ -17,15 +17,19 @@ const professionalInitialValues = {
   gender: "",
   password: "",
   confirmPass: "",
+  hasPhysicalLocation: false,
   streetName: "",
   streetNumber: "",
   floorAppartment: "", // ? Opcional
+  additionalInfo: "", // ? Opcional - Datos informativos (no se pasa a API geocodificación)
   city: "",
   state: "", // ? Opcional
   country: "",
   consultationPrice: "",
   license: "", // ? Opcional
   curriculum: null,
+  latitude: null,
+  longitude: null,
 };
 
 const genderList = ["Femenino", "Masculino", "Prefiero no responder"];
@@ -66,6 +70,12 @@ const professionalSchema = z
       .min(1, "Al menos 1 digito")
       .max(5, "No puede tener mas de 5 dígitos")
       .regex(numericRegex, "Debe ser numérico")
+      .optional()
+      .or(z.literal("")),
+    additionalInfo: z
+      .string()
+      .trim()
+      .max(100, "No puede tener mas de 100 caracteres")
       .optional()
       .or(z.literal("")),
     city: zodStrRequired()
@@ -110,11 +120,40 @@ const professionalSchema = z
         (value) => value && value.size <= MAX_CURRICULUM_SIZE,
         "Tamaño de archivo máximo: 1MB"
       ),
+    latitude: z
+      .number({
+        required_error: "Selecciona una ubicación en el mapa",
+        invalid_type_error: "Selecciona una ubicación en el mapa",
+      })
+      .min(-90, "Latitud inválida")
+      .max(90, "Latitud inválida")
+      .nullable()
+      .optional(),
+    longitude: z
+      .number({
+        required_error: "Selecciona una ubicación en el mapa",
+        invalid_type_error: "Selecciona una ubicación en el mapa",
+      })
+      .min(-180, "Longitud inválida")
+      .max(180, "Longitud inválida")
+      .nullable()
+      .optional(),
+    hasPhysicalLocation: z.boolean().optional(),
   })
   .refine((data) => data.password === data.confirmPass, {
     message: "Las contraseñas no coinciden",
     path: ["confirmPass"],
-  });
+  })
+  .refine(
+    (data) => {
+      if (!data.hasPhysicalLocation) return true;
+      return data.latitude != null && data.longitude != null;
+    },
+    {
+      message: "Debes ubicar tu consultorio en el mapa",
+      path: ["latitude"],
+    }
+  );
 
 const updateProfessionalSchema = z
   .object({
@@ -181,6 +220,12 @@ const updateProfessionalSchema = z
       .min(3, "El n° colegiado debe tener al menos 3 dígitos")
       .max(10, "No puede tener mas de 10 dígitos")
       .regex(numericRegex, "Debe ser numérico")
+      .optional()
+      .or(z.literal("")),
+    additionalInfo: z
+      .string()
+      .trim()
+      .max(100, "No puede tener mas de 100 caracteres")
       .optional()
       .or(z.literal("")),
     image: z

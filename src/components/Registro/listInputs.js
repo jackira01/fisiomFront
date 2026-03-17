@@ -1,4 +1,4 @@
-export const listInputsUser = (errors, touched) => {
+export const listInputsUserData = (errors, touched) => {
   return [
     {
       name: "name",
@@ -22,13 +22,18 @@ export const listInputsUser = (errors, touched) => {
       errorMessage: touched.birthDate && errors.birthDate,
       isInvalid: touched.birthDate && errors.birthDate ? true : false,
     },
+  ];
+};
+
+export const listInputsLocation = (errors, touched) => {
+  return [
     {
-      name: "city",
-      ariaLabel: "Ciudad",
-      label: "Ciudad",
-      type: "text",
-      errorMessage: touched.city && errors.city,
-      isInvalid: touched.city && errors.city ? true : false,
+      name: "country",
+      ariaLabel: "País",
+      label: "País",
+      type: "select",
+      errorMessage: touched.country && errors.country,
+      isInvalid: touched.country && errors.country ? true : false,
     },
     {
       name: "state",
@@ -38,28 +43,43 @@ export const listInputsUser = (errors, touched) => {
       isInvalid: touched.state && errors.state ? true : false,
     },
     {
+      name: "city",
+      ariaLabel: "Ciudad",
+      label: "Ciudad",
+      type: "text",
+      errorMessage: touched.city && errors.city,
+      isInvalid: touched.city && errors.city ? true : false,
+    },
+    {
       name: "streetName",
       ariaLabel: "Calle",
       label: "Calle",
+      type: "text",
       errorMessage: touched.streetName && errors.streetName,
       isInvalid: touched.streetName && errors.streetName ? true : false,
     },
     {
       name: "streetNumber",
-      ariaLabel: "Número",
+      ariaLabel: "Número de calle",
       label: "Número",
       errorMessage: touched.streetNumber && errors.streetNumber,
       isInvalid: touched.streetNumber && errors.streetNumber ? true : false,
     },
     {
-      name: "floorAppartment",
-      ariaLabel: "Piso/Dpto",
-      label: "Piso/Dpto",
-      errorMessage: touched.floorAppartment && errors.floorAppartment,
+      name: "additionalInfo",
+      ariaLabel: "Datos adicionales",
+      label: "Datos adicionales",
+      type: "text",
+      placeholder: "Centro comercial, local 51...",
+      errorMessage: touched.additionalInfo && errors.additionalInfo,
       isInvalid:
-        touched.floorAppartment && errors.floorAppartment ? true : false,
+        touched.additionalInfo && errors.additionalInfo ? true : false,
     },
   ];
+};
+
+export const listInputsUser = (errors, touched) => {
+  return [...listInputsUserData(errors, touched)];
 };
 
 // export const listInputsProfessional = (errors, touched) => { // If need more than 1 use it

@@ -12,6 +12,21 @@ const StarRatings = dynamic(() => import("react-star-ratings"), {
 });
 
 const ServicioMainCard = ({ profesional }) => {
+  // Ensure all properties exist with defaults
+  const {
+    _id,
+    name = '',
+    image = '/doctor-ejemplo.png',
+    specialties = [],
+    rating = { average: 0 },
+    address = {},
+    consultationPrice = '-',
+  } = profesional || {};
+
+  const cityInfo = address?.city
+    ? `${address.city}${address.state ? ', ' + address.state : ''}${address.country ? ', ' + address.country : ''}`
+    : 'A consultar';
+
   return (
     <Card
       isBlurred
@@ -22,16 +37,16 @@ const ServicioMainCard = ({ profesional }) => {
         <div className="flex flex-col overflow-hidden gap-2">
           <div className="grid grid-cols-[max-content,auto] items-center gap-4">
             <Avatar
-              src={profesional.image || "/doctor-ejemplo.png"}
+              src={image}
               className="w-16 h-16 sm:w-20 sm:h-20 ml-1"
             />
             <div className="flex flex-col gap-0">
               <h2 className="font-semibold uppercase mb-0 line-clamp-2 text-sm sm:text-medium text-[#003953] w-full">
-                {profesional.name}
+                {name}
               </h2>
-              {profesional.specialties.length ? (
+              {Array.isArray(specialties) && specialties.length > 0 ? (
                 <div className="flex flex-wrap gap-1 my-1">
-                  {profesional.specialties.map((specialty) => (
+                  {specialties.map((specialty) => (
                     <Chip
                       key={specialty._id}
                       className="bg-primary-400"
@@ -51,7 +66,7 @@ const ServicioMainCard = ({ profesional }) => {
                 </div>
               ) : null}
               <StarRatings
-                rating={profesional.rating?.average}
+                rating={rating?.average || 0}
                 starRatedColor="#ffb829"
                 numberOfStars={5}
                 starDimension="14px"
@@ -61,7 +76,7 @@ const ServicioMainCard = ({ profesional }) => {
               <Link
                 className="text-small w-fit italic mt-1 underline"
                 as={NextLink}
-                href={`./servicios/${profesional._id}/perfil`}
+                href={`./servicios/${_id}/perfil`}
               >
                 Ver más
               </Link>
@@ -72,13 +87,7 @@ const ServicioMainCard = ({ profesional }) => {
             <div className="grid grid-cols-[max-content,auto] items-center gap-2">
               <CiLocationOn className="text-primary-400 size-7 sm:size-8" />
               <p className="line-clamp-2 font-semibold text-sm sm:text-base">
-                {profesional?.address?.city
-                  ? `${profesional?.address?.city}, ${
-                      profesional?.address?.state
-                        ? profesional.address?.state + ", "
-                        : ""
-                    }${profesional.address?.country}`
-                  : "A consultar"}
+                {cityInfo}
               </p>
             </div>
             <div className="flex  items-center gap-2 ">
@@ -86,13 +95,13 @@ const ServicioMainCard = ({ profesional }) => {
               <div className="flex  flex-col">
                 <p className="font-bold text-sm sm:text-base">Consulta</p>
 
-                <p>$ {profesional.consultationPrice || "-"}</p>
+                <p>$ {consultationPrice}</p>
               </div>
             </div>
           </div>
           <div className="flex items-center justify-end">
             <div>
-              <Link href={`./servicios/${profesional._id}/turno`}>
+              <Link href={`./servicios/${_id}/turno`}>
                 <Button
                   color="secondary"
                   size="md"

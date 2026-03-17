@@ -25,18 +25,35 @@ export const axiosLogin = async (user) => {
 
 //#region Register user
 export const axiosRegisterUserForm = async (user) => {
+  const formData = new FormData();
+
+  // Mapear campos del formulario a los campos del modelo User del backend
+  formData.append("email", user.email);
+  formData.append("password", user.password);
+  formData.append("username", user.email.split("@")[0]);
+  formData.append("firstname", user.name || "");
+  if (user.phone) formData.append("phone", user.phone);
+  if (user.image) formData.append("myFile", user.image);
+
   return toast.promise(
-    axios.post(`${BASE_URL}/register/user`, user, {
+    axios.post(`${BASE_URL}/users/create`, formData, {
       withCredentials: true,
+      headers: { "Content-Type": "multipart/form-data" },
     }),
     {
       loading: "Registrandose...",
-      success: (response) => response.data.message,
+      success: (response) => {
+        // Retornar el mensaje del servidor o un mensaje por defecto
+        return response.data.message || "Usuario registrado exitosamente";
+      },
       error: (error) => {
-        if (error.response) {
-          return error.response.data.message;
-        } else {
+        // Manejar diferentes tipos de errores
+        if (error.response && error.response.data) {
+          return error.response.data.message || "Error al registrar el usuario";
+        } else if (error.message) {
           return error.message;
+        } else {
+          return "Error desconocido al registrar";
         }
       },
     }
@@ -51,12 +68,18 @@ export const axiosRegisterProfessionalForm = async (user) => {
     }),
     {
       loading: "Registrandose...",
-      success: (response) => response.data.message,
+      success: (response) => {
+        // Retornar el mensaje del servidor o un mensaje por defecto
+        return response.data.message || "Registro completado. Pendiente de aprobación";
+      },
       error: (error) => {
-        if (error.response) {
-          return error.response.data.message;
-        } else {
+        // Manejar diferentes tipos de errores
+        if (error.response && error.response.data) {
+          return error.response.data.message || "Error al registrar el usuario";
+        } else if (error.message) {
           return error.message;
+        } else {
+          return "Error desconocido al registrar";
         }
       },
     }
@@ -109,7 +132,7 @@ export const verifyCredentials = async (email, password) => {
   } catch (error) {
     toast.error(
       error.response.data.message ||
-        "No se pudieron verificar las credenciales de la cuenta",
+      "No se pudieron verificar las credenciales de la cuenta",
       {
         className: "text-center",
       }

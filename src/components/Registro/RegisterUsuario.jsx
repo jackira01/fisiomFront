@@ -9,7 +9,13 @@ import { listInputsUser } from "./listInputs";
 import { removeObjFalsyValues } from "@/utils/helpers";
 import toast from "react-hot-toast";
 
-export const RegisterUser = ({ conditionsAccepted }) => {
+export const RegisterUser = ({
+  conditionsAccepted,
+  aceptoCondiciones,
+  setAceptoCondiciones,
+  recibirInformacion,
+  setRecibirInformacion,
+}) => {
   const router = useRouter();
 
   const handleSubmit = async (values, { resetForm }) => {
@@ -17,10 +23,16 @@ export const RegisterUser = ({ conditionsAccepted }) => {
       toast.error("Por favor acepte los términos y condiciones");
       return;
     }
+
     values = removeObjFalsyValues(values);
-    await axiosRegisterUserForm(values);
-    resetForm();
-    router.push("/login");
+
+    try {
+      await axiosRegisterUserForm(values);
+      resetForm();
+      setTimeout(() => { router.push("/login"); }, 1500);
+    } catch (error) {
+      console.error("Error en registro:", error);
+    }
   };
 
   return (
@@ -29,11 +41,15 @@ export const RegisterUser = ({ conditionsAccepted }) => {
       initialValues={userInitialValues}
       validate={formikZodValidator(userSchema)}
     >
-      <Form className="flex flex-col gap-2 w-full overflow-hidden min-[480px]:w-[90%]">
+      <Form className="flex flex-col gap-2 w-full">
         <InputsFormRegister
           isProfessional={false}
           submitButtonMessage={"Registrarse"}
           listInputsValue={listInputsUser}
+          aceptoCondiciones={aceptoCondiciones}
+          setAceptoCondiciones={setAceptoCondiciones}
+          recibirInformacion={recibirInformacion}
+          setRecibirInformacion={setRecibirInformacion}
         />
       </Form>
     </Formik>
