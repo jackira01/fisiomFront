@@ -11,7 +11,7 @@ import { io } from "socket.io-client";
 export const socket = io(`${BASE_URL}/`, { autoConnect: false });
 
 const SocketContext = createContext(
-  /** @type {{ socket: typeof socket}} */ ({}),
+  /** @type {{ socket: typeof socket}} */({}),
 );
 
 /** @param {{children: React.ReactNode}} props */

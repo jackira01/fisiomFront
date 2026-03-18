@@ -42,11 +42,10 @@ const QuestionContent = ({ data, user }) => {
             </div>
           </div>
           <span
-            className={`text-xs px-2.5 py-0.5 rounded-full font-medium shrink-0 ${
-              isAnswered
+            className={`text-xs px-2.5 py-0.5 rounded-full font-medium shrink-0 ${isAnswered
                 ? 'bg-green-100 text-green-700'
                 : 'bg-amber-100 text-amber-700'
-            }`}
+              }`}
           >
             {isAnswered ? 'Respondida' : 'Sin respuesta'}
           </span>
