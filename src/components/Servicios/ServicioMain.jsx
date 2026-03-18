@@ -31,7 +31,7 @@ const ServicioMain = () => {
   useEffect(() => {
     const abortController = new AbortController();
     setLoading(true);
-    
+
     const fetchProfessionals = async () => {
       try {
         const data = await getProfessionals({
@@ -41,7 +41,7 @@ const ServicioMain = () => {
           position: location.user.join(","),
           page: filters.page,
         });
-        
+
         if (filters.page === 1) {
           setProfessionals(data.users || []);
           setToggle((prev) => !prev);

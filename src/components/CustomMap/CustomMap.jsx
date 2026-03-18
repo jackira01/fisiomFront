@@ -77,13 +77,13 @@ const CustomMap = ({ markers, setMarkers, user, toggle }) => {
         ) : null}
         {markers?.map((e, i) => {
           return (
-            <Marker 
-              key={i} 
+            <Marker
+              key={i}
               position={
                 Array.isArray(e.coordinates) && e.coordinates.length === 2
                   ? e.coordinates
                   : [0, 0]
-              } 
+              }
               icon={customIcon}
             >
               {/* <Popup>

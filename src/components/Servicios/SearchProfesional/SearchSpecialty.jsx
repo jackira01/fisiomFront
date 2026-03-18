@@ -13,7 +13,7 @@ export default function SearchSpecialty() {
 
   useEffect(() => {
     const abortController = new AbortController();
-    
+
     const fetchSpecialties = async () => {
       try {
         const data = await getSpecialties();
@@ -23,7 +23,7 @@ export default function SearchSpecialty() {
         console.error('Error fetching specialties:', error);
       }
     };
-    
+
     fetchSpecialties();
     return () => abortController.abort();
   }, []);

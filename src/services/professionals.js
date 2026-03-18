@@ -24,25 +24,25 @@ export const getProfessionals = async (filters = {}) => {
       `${BASE_URL}/users?${params.toString()}`,
       { withCredentials: true }
     );
-    
+
     // Filter only professional users and transform data to match frontend expectations
     const transformedUsers = (response.data.users || [])
       .filter(user => user.role === 'professional')
       .map(user => ({
-      ...user,
-      name: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
-      specialties: [], // Placeholder - add relationship later
-      address: {
-        city: user.city || '',
-        state: user.state || '',
-        country: user.country || '',
-      },
-      rating: {
-        average: 0, // Placeholder - add rating calculation later
-      },
-      consultationPrice: user.consultationPrice || '-',
-      coordinates: [user.latitud || 0, user.longitud || 0], // For map display
-    }));
+        ...user,
+        name: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
+        specialties: [], // Placeholder - add relationship later
+        address: {
+          city: user.city || '',
+          state: user.state || '',
+          country: user.country || '',
+        },
+        rating: {
+          average: 0, // Placeholder - add rating calculation later
+        },
+        consultationPrice: user.consultationPrice || '-',
+        coordinates: [user.latitud || 0, user.longitud || 0], // For map display
+      }));
 
     return {
       ...response.data,
@@ -219,31 +219,31 @@ export const deleteService = async (serviceId) => {
 export const getPendingProfessionals = async () => {
   try {
     const response = await axios.get(`${BASE_URL}/professionals/pending`, {
-      withCredentials: true, 
+      withCredentials: true,
     });
-    return { data: response.data }; 
+    return { data: response.data };
   } catch (error) {
     toast.error("Error al obtener profesionales pendientes");
-    return { data: null, error }; 
+    return { data: null, error };
   }
 };
 
 export const acceptProfessional = async (professionalId) => {
   try {
-    console.log(`Aprobando profesional con ID: ${professionalId}`); 
+    console.log(`Aprobando profesional con ID: ${professionalId}`);
 
     const response = await axios.put(
-      `${BASE_URL}/professionals/approve/${professionalId}`, 
-      {}, 
+      `${BASE_URL}/professionals/approve/${professionalId}`,
+      {},
       { withCredentials: true }
     );
 
     toast.success("Profesional aceptado con éxito");
-    return response.data; 
+    return response.data;
   } catch (error) {
-    console.error("Error al aceptar profesional:", error); 
+    console.error("Error al aceptar profesional:", error);
     toast.error("Error al aceptar profesional");
-    throw error; 
+    throw error;
   }
 };
 
