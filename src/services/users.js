@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/utils/api";
 import { getErrorMessage } from "@/utils/utils";
+import { uploadImageToCloudinary } from "@/services/cloudinary";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -25,29 +26,31 @@ export const axiosLogin = async (user) => {
 
 //#region Register user
 export const axiosRegisterUserForm = async (user) => {
-  const formData = new FormData();
+  let imageUrl = undefined;
+  if (user.image instanceof File) {
+    const { secure_url } = await uploadImageToCloudinary(user.image, 'users');
+    imageUrl = secure_url;
+  }
 
-  // Mapear campos del formulario a los campos del modelo User del backend
-  formData.append("email", user.email);
-  formData.append("password", user.password);
-  formData.append("username", user.email.split("@")[0]);
-  formData.append("firstname", user.name || "");
-  if (user.phone) formData.append("phone", user.phone);
-  if (user.image) formData.append("myFile", user.image);
+  const payload = {
+    email: user.email,
+    password: user.password,
+    username: user.email.split("@")[0],
+    firstname: user.name || "",
+    ...(user.phone && { phone: user.phone }),
+    ...(imageUrl && { image: imageUrl }),
+  };
 
   return toast.promise(
-    axios.post(`${BASE_URL}/users/create`, formData, {
+    axios.post(`${BASE_URL}/users/create`, payload, {
       withCredentials: true,
-      headers: { "Content-Type": "multipart/form-data" },
     }),
     {
       loading: "Registrandose...",
       success: (response) => {
-        // Retornar el mensaje del servidor o un mensaje por defecto
         return response.data.message || "Usuario registrado exitosamente";
       },
       error: (error) => {
-        // Manejar diferentes tipos de errores
         if (error.response && error.response.data) {
           return error.response.data.message || "Error al registrar el usuario";
         } else if (error.message) {

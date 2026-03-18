@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { Button, Select, SelectItem, Image } from '@nextui-org/react';
 import { createBlog, updateBlog } from '@/services/blogs';
+import { uploadImageToCloudinary } from '@/services/cloudinary';
 import { formikZodValidator, zodStrRequired } from '@/utils/validations';
 import { z } from 'zod';
 
@@ -57,12 +58,16 @@ const BlogForm = ({
 
   const handleCreate = async (values, resetForm) => {
     try {
-      const formData = new FormData();
-      formData.append('professional_id', session?.user.id);
-      for (const name in values) {
-        formData.append(name, values[name]);
-      }
-      await createBlog(formData);
+      const { secure_url, public_id } = await uploadImageToCloudinary(values.image, 'blogs');
+
+      await createBlog({
+        professional_id: session?.user.id,
+        title: values.title,
+        text: values.text,
+        type_id: values.type_id,
+        image: secure_url,
+        id_image: public_id,
+      });
       // * Clears content of editor from tiptap
       if (editorRef) editorRef.current?.commands.clearContent(true);
       resetForm();

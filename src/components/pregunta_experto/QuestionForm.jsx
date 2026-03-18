@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAtom, useAtomValue } from 'jotai';
 import { filtersAtom, questionsAtom } from './store/questions';
 import { createQuestion } from '@/services/questions';
+import { useSession } from 'next-auth/react';
 
 const initialValues = {
   text: '',
@@ -28,13 +29,14 @@ function QuestionForm() {
   const [store, setStore] = useAtom(questionsAtom);
   const { specialtyId } = useAtomValue(filtersAtom);
   const { specialties, questions } = store;
+  const { data: session } = useSession();
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const sameSpecialty = values.specialtyId === specialtyId;
       const generalQuestion = values.specialtyId === '1';
       if (generalQuestion) delete values.specialtyId;
-      const { newQuestion } = await createQuestion(values);
+      const { newQuestion } = await createQuestion(values, session?.user?.accessToken);
       if (sameSpecialty) setStore({ ...store, questions: [newQuestion, ...questions] });
       resetForm();
       toast.success('Pregunta creada correctamente');

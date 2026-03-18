@@ -56,13 +56,20 @@ const userSchema = z
       .min(8, "La contraseña debe tener al menos 8 caracteres")
       .max(50, "No mas de 50 caracteres"),
     confirmPass: zodStrRequired(),
-    streetName: zodStrRequired()
-      .min(2, "Debe tener al menos 2 caracteres")
+    streetName: z
+      .string()
+      .trim()
       .max(50, "No más de 50 caracteres")
-      .regex(streetNameRegex, "Solo letras y números (Min: 2 caracteres)"),
-    streetNumber: zodStrRequired()
+      .regex(streetNameRegex, "Solo letras y números (Min: 2 caracteres)")
+      .optional()
+      .or(z.literal("")),
+    streetNumber: z
+      .string()
+      .trim()
       .max(8, "No puede tener mas de 8 dígitos")
-      .regex(numericRegex, "Debe ser numérico"),
+      .regex(numericRegex, "Debe ser numérico")
+      .optional()
+      .or(z.literal("")),
     floorAppartment: z
       .string()
       .max(5, "No puede tener mas de 5 dígitos")
@@ -75,10 +82,13 @@ const userSchema = z
       .max(100, "No puede tener mas de 100 caracteres")
       .optional()
       .or(z.literal("")),
-    city: zodStrRequired()
-      .min(2, "Debe tener al menos 2 caracteres")
+    city: z
+      .string()
+      .trim()
       .max(50, "No puede contener mas de 50 caracteres")
-      .regex(cityRegex, "Solo puede contener letras y espacios"),
+      .regex(cityRegex, "Solo puede contener letras y espacios")
+      .optional()
+      .or(z.literal("")),
     state: z
       .string()
       .min(2, "Debe tener al menos 2 caracteres")
@@ -86,10 +96,13 @@ const userSchema = z
       .regex(nameRegex, "Solo puede contener letras")
       .optional()
       .or(z.literal("")),
-    country: zodStrRequired()
-      .min(2, "Debe tener al menos 2 caracteres")
+    country: z
+      .string()
+      .trim()
       .max(50, "No mas de 50 caracteres")
-      .regex(nameRegex, "Solo puede contener letras"),
+      .regex(nameRegex, "Solo puede contener letras")
+      .optional()
+      .or(z.literal("")),
     interests: z
       .array(z.string())
       .max(5, "No puede elegir mas de 5 intereses")

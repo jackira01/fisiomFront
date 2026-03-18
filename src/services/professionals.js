@@ -3,22 +3,66 @@ import { BASE_URL } from '@/utils/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+const normalizeText = (value = '') =>
+  String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();
+
+const buildSpecialties = (user = {}) => {
+  const specialties = [];
+
+  if (typeof user.specialty === 'string' && user.specialty.trim()) {
+    specialties.push(user.specialty.trim());
+  }
+
+  if (Array.isArray(user.specialties)) {
+    user.specialties.forEach((specialty) => {
+      if (typeof specialty === 'string' && specialty.trim()) {
+        specialties.push(specialty.trim());
+      }
+
+      if (
+        specialty &&
+        typeof specialty === 'object' &&
+        typeof specialty.name === 'string' &&
+        specialty.name.trim()
+      ) {
+        specialties.push(specialty.name.trim());
+      }
+    });
+  }
+
+  return [...new Set(specialties)].map((name) => ({
+    _id: normalizeText(name) || name,
+    name,
+  }));
+};
+
 export const getProfessionals = async (filters = {}) => {
   try {
     const {
       search = '',
       city = '',
+      state = '',
+      country = '',
       specialtyId = '',
       position = '',
       page = 1,
+      limit = 12,
     } = filters;
 
     const params = new URLSearchParams();
+    params.append('role', 'professional');
     if (search) params.append('search', search);
     if (city) params.append('city', city);
+    if (state) params.append('state', state);
+    if (country) params.append('country', country);
     if (specialtyId) params.append('specialtyId', specialtyId);
     if (position) params.append('position', position);
     params.append('page', page);
+    params.append('limit', limit);
 
     const response = await axios.get(
       `${BASE_URL}/users?${params.toString()}`,
@@ -28,21 +72,24 @@ export const getProfessionals = async (filters = {}) => {
     // Filter only professional users and transform data to match frontend expectations
     const transformedUsers = (response.data.users || [])
       .filter(user => user.role === 'professional')
-      .map(user => ({
-        ...user,
-        name: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
-        specialties: [], // Placeholder - add relationship later
-        address: {
-          city: user.city || '',
-          state: user.state || '',
-          country: user.country || '',
-        },
-        rating: {
-          average: 0, // Placeholder - add rating calculation later
-        },
-        consultationPrice: user.consultationPrice || '-',
-        coordinates: [user.latitud || 0, user.longitud || 0], // For map display
-      }));
+      .map(user => {
+        return {
+          ...user,
+          name: `${user.firstname || ''} ${user.lastname || ''}`.trim(),
+          specialties: buildSpecialties(user),
+          address: {
+            city: user.address?.city || user.city || '',
+            state: user.address?.state || user.state || '',
+            country: user.address?.country || user.country || '',
+          },
+          rating: {
+            average: 0, // Placeholder - add rating calculation later
+          },
+          consultationPrice: user.consultationPrice || '-',
+          // NOTE: Keep original location structure from backend for Leaflet map
+          // user.location.coordinates is already in GeoJSON format [lng, lat]
+        };
+      });
 
     return {
       ...response.data,
@@ -50,6 +97,23 @@ export const getProfessionals = async (filters = {}) => {
     };
   } catch (error) {
     console.error('Error fetching professionals:', error);
+    throw error;
+  }
+};
+
+export const getProfessionalFilters = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/users/professionals/filters`, {
+      withCredentials: true,
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Error fetching professional filters');
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching professional filters:', error);
     throw error;
   }
 };

@@ -21,13 +21,15 @@ const validate = (value) => {
   return !result.success ? errorMessage : '';
 };
 
-const ResponseForm = ({ questionId, user }) => {
+const ResponseForm = ({ questionId, user, creatorId }) => {
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
   const updateQuestion = useSetAtom(updateQuestionAtom);
+  const { data: session } = useSession();
   const isProfessional = user?.role === roles.PROFESSIONAL;
+  const isCreator = user?.id && creatorId && user.id === creatorId;
 
-  if (!isProfessional) return null;
+  if (!isProfessional || isCreator) return null;
 
   const handleChange = (e) => {
     setResponse(e.target.value);
@@ -40,7 +42,7 @@ const ResponseForm = ({ questionId, user }) => {
     if (submitError) return setError(submitError);
     try {
       const finalResponse = { text: response, professionalId: user?.id };
-      const { updatedQuestion } = await respondQuestion(questionId, finalResponse);
+      const { updatedQuestion } = await respondQuestion(questionId, finalResponse, session?.user?.accessToken);
       updateQuestion(updatedQuestion);
       toast.success('Respuesta enviada correctamente!');
     } catch (error) {

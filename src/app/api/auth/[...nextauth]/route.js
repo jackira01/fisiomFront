@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google'; 
+import GoogleProvider from 'next-auth/providers/google';
 import { cookies } from 'next/headers';
 
 /** @type {import("next-auth").NextAuthOptions} */
@@ -92,24 +92,47 @@ export const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-   
       if (user) {
-        token.name = user.name || '';  
-        token.image = user.image || ''; 
+        // user = { user: { ...MongoDB doc... }, token: 'JWT string...' }
+        const userData = user.user || {};
+        token.accessToken = user.token; // Token JWT de la API
+        token.id = userData._id;
+        token.role = userData.role;
+        token.name =
+          `${userData.firstname || ''} ${userData.lastname || ''}`.trim() ||
+          userData.username ||
+          '';
+        token.image = userData.image || '';
+        token.email = userData.email || '';
+
+        // Decodificar expiración del token JWT de la API (payload.exp en segundos)
+        try {
+          const payload = JSON.parse(
+            Buffer.from(user.token.split('.')[1], 'base64url').toString()
+          );
+          token.apiTokenExpires = payload.exp * 1000; // convertir a ms
+        } catch {
+          token.apiTokenExpires = Date.now() + 60 * 60 * 1000; // fallback 1h
+        }
+
+        delete token.error;
       }
-  
-      // console.log('Token después de modificación: ', token); // Log para ver el token después de la modificación
+
+      // En cada revalidación de sesión comprobar si el token de la API expiró
+      if (token.apiTokenExpires && Date.now() > token.apiTokenExpires) {
+        token.error = 'AccessTokenExpired';
+      }
+
       return token;
     },
     async session({ session, token }) {
-      // console.log('Callback session: ', { session, token }); // Log para ver los valores de session y token
-  
-      session.user = token; 
-
+      session.user = token;
+      // Propagar el error de expiración para que el cliente pueda reaccionar
+      if (token.error) session.error = token.error;
       return session;
     },
   },
-  
+
   events: {
     async signOut() {
       cookies().delete('accessToken');

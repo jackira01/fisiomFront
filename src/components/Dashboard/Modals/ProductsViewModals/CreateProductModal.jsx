@@ -19,6 +19,7 @@ import Image from 'next/image';
 import { BiUpload } from 'react-icons/bi';
 import { MdDriveFileRenameOutline, MdOutlineDescription } from 'react-icons/md';
 import { createNewProduct } from '@/app/api/productsActions/createNewProduct';
+import { uploadImageToCloudinary } from '@/services/cloudinary';
 import toast from 'react-hot-toast';
 
 export default function CreateProductModal({ categories, setFetchAgain }) {
@@ -50,26 +51,31 @@ export default function CreateProductModal({ categories, setFetchAgain }) {
   async function handleSubmit() {
     const form = document.getElementById('createProductForm');
     setIsLoading(true);
-    const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('description', newProduct.description);
-    formData.append('price', newProduct.price);
-    formData.append('stock', newProduct.stock);
-    formData.append('category', newProduct.category);
-    formData.append('image', newProduct.image);
+    try {
+      const { secure_url, public_id } = await uploadImageToCloudinary(newProduct.image, 'products');
 
-    const { data, error } = await createNewProduct(formData);
-    if (error) {
+      const { data, error } = await createNewProduct({
+        name: newProduct.name,
+        description: newProduct.description,
+        price: newProduct.price,
+        stock: newProduct.stock,
+        category: newProduct.category,
+        image: secure_url,
+        id_image: public_id,
+      });
+
+      if (error) {
+        return toast.error(error);
+      }
+      form.reset();
+      setSelectedImage(null);
+      setFetchAgain((fetchAgain) => !fetchAgain);
+      toast.success(data.message);
+    } catch (error) {
+      toast.error('Error al subir la imagen. Intente nuevamente.');
+    } finally {
       setIsLoading(false);
-      return toast.error(error);
     }
-    form.reset();
-    setSelectedImage(null);
-
-    setIsLoading(false);
-    //Acá cambio el estado de fetchAgain para volver a ejecutar el useEffect de ProductsView.
-    setFetchAgain((fetchAgain) => !fetchAgain);
-    return toast.success(data.message);
   }
   return (
     <>

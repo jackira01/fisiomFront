@@ -22,22 +22,26 @@ export const getQuestions = async ({
   }
 };
 
-export const createQuestion = async (values) => {
+export const createQuestion = async (values, token) => {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}/questions/create`, {
     method: 'POST',
     body: JSON.stringify(values),
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Error creando la pregunta');
   return await res.json();
 };
 
-export const respondQuestion = async (questionId, values) => {
+export const respondQuestion = async (questionId, values, token) => {
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE_URL}/questions/response/${questionId}`, {
     method: 'PUT',
     body: JSON.stringify(values),
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     credentials: 'include',
   });
   if (!res.ok) throw new Error('Error respondiendo a la pregunta');

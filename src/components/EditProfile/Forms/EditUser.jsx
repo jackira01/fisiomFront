@@ -6,6 +6,7 @@ import { listInputsUser } from "@/components/Registro/listInputs";
 import { formikZodValidator } from "@/utils/validations";
 import { userSchema } from "@/utils/validations/userSchema";
 import { updateUser, verifyCredentials } from "@/services/users";
+import { uploadImageToCloudinary } from "@/services/cloudinary";
 import { getFormdataFromObj } from "@/utils/helpers";
 import { TfiReload } from "react-icons/tfi";
 import toast from "react-hot-toast";
@@ -45,8 +46,23 @@ const EditUser = ({
     if (!verified) return;
 
     try {
-      const formData = getFormdataFromObj(newValues);
-      const { data } = await updateUser(_id, formData);
+      let imageUrl = undefined;
+      let imagePublicId = undefined;
+      if (newValues.image instanceof File) {
+        const { secure_url, public_id } = await uploadImageToCloudinary(newValues.image, 'users');
+        imageUrl = secure_url;
+        imagePublicId = public_id;
+      }
+
+      const payload = getFormdataFromObj({
+        ...newValues,
+        ...(imageUrl && { image: imageUrl, id_image: imagePublicId }),
+      });
+      // Eliminar el File del payload — el backend ya no lo necesita
+      payload.delete('image');
+      if (imageUrl) payload.set('image', imageUrl);
+
+      const { data } = await updateUser(_id, payload);
       await updateSessionUser(data.updated);
       setIsSuccessModalOpen(true);
     } catch (error) {

@@ -1,23 +1,77 @@
 "use client";
 
-import axios from "axios";
-import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { Marker } from "react-leaflet";
 import { Icon } from "leaflet";
-import ServicioMainCardSmall from "../Servicios/ServicioMainCardSmall";
-import ProfessionalsUpdate from "./ProfessionalsUpdate";
 import UsersUpdate from "./UsersUpdate";
 import CustomControls from "./CustomControls";
 import useGeolocation from "@/hooks/useGeolocation";
-import { apiEndpoints } from "../../api_endpoints";
+import MapWrapper from "./MapWrapper";
 
-const CustomMap = ({ markers, setMarkers, user, toggle }) => {
+const COLOMBIA_CENTER = { lat: 4.5709, lng: -74.2973 };
+const COLOMBIA_ZOOM = 6;
+const DEFAULT_MARKER_ZOOM = 13;
+
+const isValidMarkerCoordinates = (coordinates) => {
+  if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+    return false;
+  }
+
+  const [longitude, latitude] = coordinates;
+
+  return (
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    !(latitude === 0 && longitude === 0)
+  );
+};
+
+const isValidUserCoordinates = (coordinates) => {
+  if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+    return false;
+  }
+
+  const [latitude, longitude] = coordinates;
+
+  return (
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    !(latitude === 0 && longitude === 0)
+  );
+};
+
+const professionalIcon = new Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+const CustomMap = ({ markers, setMarkers, user }) => {
   const customIcon = new Icon({
-    iconUrl: "/Red-Circle-Transparent.png", //"https://cdn-icons-png.flaticon.com/128/684/684908.png",
-    iconSize: [96, 96],
-    className: "opacity-20",
+    iconUrl: professionalIcon.options.iconUrl,
+    iconRetinaUrl: professionalIcon.options.iconRetinaUrl,
+    shadowUrl: professionalIcon.options.shadowUrl,
+    iconSize: professionalIcon.options.iconSize,
+    iconAnchor: professionalIcon.options.iconAnchor,
+    popupAnchor: professionalIcon.options.popupAnchor,
+    shadowSize: professionalIcon.options.shadowSize,
   });
   const userIcon = new Icon({
     iconUrl: "/pin_red.png",
@@ -26,77 +80,67 @@ const CustomMap = ({ markers, setMarkers, user, toggle }) => {
 
   const location = useGeolocation();
   const pathname = usePathname();
+  const validUserLocation = isValidUserCoordinates(location?.user)
+    ? location.user
+    : null;
+  const validMarkers = (markers || []).filter((marker) =>
+    isValidMarkerCoordinates(marker?.location?.coordinates)
+  );
 
-  // Calculate center based on first valid marker or default to user location
-  const getCenter = () => {
-    if (markers.length > 0 && markers[0]?.coordinates) {
+  const getMapView = () => {
+    const firstMarkerWithLocation = validMarkers[0]?.location?.coordinates;
+
+    if (isValidMarkerCoordinates(firstMarkerWithLocation)) {
       return {
-        lat: markers[0].coordinates[0] || 0,
-        lng: markers[0].coordinates[1] || 0,
+        center: { lat: firstMarkerWithLocation[1], lng: firstMarkerWithLocation[0] },
+        zoom: DEFAULT_MARKER_ZOOM,
       };
     }
-    if (location?.user && location.user.length === 2) {
+
+    if (validUserLocation) {
       return {
-        lat: location.user[0],
-        lng: location.user[1],
+        center: { lat: validUserLocation[0], lng: validUserLocation[1] },
+        zoom: DEFAULT_MARKER_ZOOM,
       };
     }
-    return { lat: 0, lng: 0 }; // Default center
+
+    return {
+      center: COLOMBIA_CENTER,
+      zoom: COLOMBIA_ZOOM,
+    };
   };
 
-  if (markers.length) {
-    return (
-      <MapContainer
-        center={getCenter()}
-        zoom={15}
-        zoomControl={false}
-        scrollWheelZoom={true}
-        className="w-full h-full z-0"
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="https://www.openstreetmap.org/copyright contributors"
-        />
-        <CustomControls />
-        {pathname === "/servicios" && (
-          <ProfessionalsUpdate
-            markers={markers}
-            setMarkers={setMarkers}
-            toggle={toggle}
-          />
-        )}
-        {pathname === "/comunidad" && (
-          <UsersUpdate
-            markers={markers}
-            setMarkers={setMarkers}
-            toggle={toggle}
-          />
-        )}
-        {location?.user ? (
-          <Marker position={location.user} icon={userIcon}></Marker>
-        ) : null}
-        {markers?.map((e, i) => {
-          return (
-            <Marker
-              key={i}
-              position={
-                Array.isArray(e.coordinates) && e.coordinates.length === 2
-                  ? e.coordinates
-                  : [0, 0]
-              }
-              icon={customIcon}
-            >
-              {/* <Popup>
-                <ServicioMainCardSmall profesional={e} />
-              </Popup> */}
-            </Marker>
-          );
-        })}
-      </MapContainer>
-    );
-  } else {
+  const { center, zoom } = getMapView();
+
+  if (!center || typeof center.lat !== "number" || typeof center.lng !== "number") {
     return null;
   }
+
+  return (
+    <MapWrapper center={center} zoom={zoom}>
+      <CustomControls />
+      {pathname === "/comunidad" && (
+        <UsersUpdate
+          markers={markers}
+          setMarkers={setMarkers}
+          toggle={false}
+        />
+      )}
+      {validUserLocation ? (
+        <Marker position={validUserLocation} icon={userIcon} />
+      ) : null}
+      {validMarkers.map((marker) => {
+        const coords = marker?.location?.coordinates;
+        return (
+          <Marker
+            key={marker._id}
+            position={[coords[1], coords[0]]} // GeoJSON [lng, lat] -> Leaflet [lat, lng]
+            icon={customIcon}
+          />
+        );
+      })}
+    </MapWrapper>
+  );
 };
 
 export default CustomMap;

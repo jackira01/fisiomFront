@@ -24,7 +24,6 @@ const ServicioMain = () => {
   const [professionals, setProfessionals] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useAtom(filtersAtom);
-  const [toggle, setToggle] = useState(false);
 
   const location = useGeolocation();
 
@@ -36,15 +35,19 @@ const ServicioMain = () => {
       try {
         const data = await getProfessionals({
           search: filters.search.join(","),
+          state: filters.state,
           city: filters.city,
+          country: filters.country,
           specialtyId: filters.specialtyId,
-          position: location.user.join(","),
+          position:
+            Array.isArray(location.user) && location.user.some(Boolean)
+              ? location.user.join(",")
+              : "",
           page: filters.page,
         });
 
         if (filters.page === 1) {
           setProfessionals(data.users || []);
-          setToggle((prev) => !prev);
         } else {
           setProfessionals((prev) => {
             const professionalsMap = new Map(
@@ -94,11 +97,7 @@ const ServicioMain = () => {
         </div>
 
         <div className="min-h-[80vh] w-full">
-          <CustomMap
-            markers={professionals}
-            setMarkers={setProfessionals}
-            toggle={toggle}
-          />
+          <CustomMap markers={professionals} setMarkers={setProfessionals} />
         </div>
       </div>
     </main>

@@ -1,38 +1,42 @@
 "use client";
-import { useAtom } from "jotai";
-import { filtersAtom } from "../store/servicios";
-import { AiFillHome } from "react-icons/ai";
-import { FaBriefcaseMedical } from "react-icons/fa6";
-import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 
-export default function SearchSpecialty({ specialties }) {
+import { useAtom } from "jotai";
+import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
+import { CiLocationOn } from "react-icons/ci";
+import { filtersAtom } from "../store/servicios";
+
+export default function SearchCity({ cities }) {
   const [filters, setFilters] = useAtom(filtersAtom);
 
   const onSelectionChange = (value) => {
-    setFilters((currentFilters) => ({
-      ...currentFilters,
-      specialtyId: value ? String(value) : "",
-      page: 1,
-    }));
+    const newCity = value ? String(value) : "";
+    setFilters((currentFilters) => {
+      if (currentFilters.city === newCity) return currentFilters;
+      return {
+        ...currentFilters,
+        city: newCity,
+        page: 1,
+      };
+    });
   };
 
   return (
     <Autocomplete
-      startsWidth={<AiFillHome />}
-      label="Seleccione:"
-      placeholder="Especialidad"
+      label="Ciudad"
+      placeholder="Ciudad"
       className="w-full sm:max-w-sm"
-      defaultItems={specialties}
+      defaultItems={cities}
       listboxProps={{
         color: "primary",
       }}
-      selectedKey={filters.specialtyId || null}
+      selectedKey={filters.city || null}
       onSelectionChange={onSelectionChange}
+      isDisabled={!filters.state}
     >
       {(item) => (
         <AutocompleteItem key={item.id} textValue={item.name}>
           <div className="flex items-center gap-2">
-            <FaBriefcaseMedical alt={item.name} className="text-primary-300" />
+            <CiLocationOn className="text-primary-300" />
             <span>{item.name}</span>
           </div>
         </AutocompleteItem>

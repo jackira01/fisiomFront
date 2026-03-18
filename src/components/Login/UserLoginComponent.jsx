@@ -128,7 +128,7 @@ const UserLoginComponent = () => {
             Ingresar
           </Button>
 
-          {/* Botón de Google */}
+          {/* Botón de Google — deshabilitado temporalmente
           <Button
             className="flex items-center justify-center mt-2 text-gray-800 uppercase rounded-none font-semibold tracking-wider"
             onClick={handleGoogleLogin}
@@ -137,6 +137,7 @@ const UserLoginComponent = () => {
             <FcGoogle className="mr-2" size={24} />
             Ingresar con Google
           </Button>
+          */}
 
           <div className="flex flex-row justify-center items-center gap-4 mt-8">
             <a className="text-sm hover:underline" href="/password_olvidada">

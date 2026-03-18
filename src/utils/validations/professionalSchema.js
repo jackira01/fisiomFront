@@ -11,6 +11,7 @@ import { zodStrRequired } from "./index";
 
 const professionalInitialValues = {
   name: "",
+  specialty: "",
   phone: "",
   email: "",
   birthDate: "",
@@ -43,6 +44,7 @@ const professionalSchema = z
       .min(3, "Debe tener al menos 3 caracteres")
       .max(30, "No mas de 30 caracteres")
       .regex(nameRegex, "Debe contener solo letras"),
+    specialty: zodStrRequired("Seleccione una especialidad"),
     phone: zodStrRequired().regex(phoneRegExp, "No es un teléfono valido"),
     email: zodStrRequired().email("No es un email"),
     birthDate: z
@@ -161,6 +163,7 @@ const updateProfessionalSchema = z
       .min(3, "Debe tener al menos 3 caracteres")
       .max(30, "No mas de 30 caracteres")
       .regex(nameRegex, "Debe contener solo letras"),
+    specialty: zodStrRequired("Seleccione una especialidad"),
     phone: zodStrRequired().regex(phoneRegExp, "No es un teléfono valido"),
     email: zodStrRequired().email("No es un email"),
     birthDate: z

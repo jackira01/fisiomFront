@@ -3,7 +3,6 @@ import { useRouter } from "next/navigation";
 import { Form, Formik } from "formik";
 import { InputsFormRegister } from "./InputsForms";
 import { axiosRegisterProfessionalForm } from "@/services/users";
-import { getFormdataFromObj, removeObjFalsyValues } from "@/utils/helpers";
 import { formikZodValidator } from "@/utils/validations";
 import {
   professionalInitialValues,
@@ -27,17 +26,17 @@ export function RegisterProfessional({
       return;
     }
 
-    // Preservar lat/lng antes de eliminar valores falsy (0 es falsy en JS)
-    const { latitude, longitude } = values;
-    values = removeObjFalsyValues(values);
-    const formData = getFormdataFromObj(values);
-    // set() sobrescribe si ya existe o crea la entrada, garantizando un único valor por campo
-    if (latitude != null) formData.set("latitude", latitude);
-    if (longitude != null) formData.set("longitude", longitude);
-
     try {
+      // Preparar payload JSON (no incluir curriculum ya que no se procesa en el backend)
+      const payload = {
+        ...values,
+      };
+
+      // Remover el curriculum del payload (es un File y no se procesa)
+      delete payload.curriculum;
+
       // Esperar a que el registro se complete
-      await axiosRegisterProfessionalForm(formData);
+      await axiosRegisterProfessionalForm(payload);
 
       // Si llegamos aquí, el registro fue exitoso
       resetForm();
@@ -47,8 +46,6 @@ export function RegisterProfessional({
         router.push("/login");
       }, 1500);
     } catch (error) {
-      // El error ya fue manejado por el toast.promise, 
-      // pero capturamos aquí para evitar que se lance una excepción sin manejo
       console.error("Error en registro profesional:", error);
     }
   };

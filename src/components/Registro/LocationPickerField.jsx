@@ -26,7 +26,7 @@ const STATUS = { IDLE: "idle", LOADING: "loading", SUCCESS: "success", ERROR: "e
  * - El marcador solo es arrastrable en modo "edición" (botón Modificar/Guardar).
  */
 export const LocationPickerField = () => {
-  const { values, errors, touched, setFieldValue, setFieldTouched } =
+  const { values, errors, touched, setFieldValue, setFieldTouched, setValues } =
     useFormikContext();
 
   const [geocodeStatus, setGeocodeStatus] = useState(STATUS.IDLE);
@@ -61,8 +61,12 @@ export const LocationPickerField = () => {
       const pos = [data.latitude, data.longitude];
       setMapPosition(pos);
       setPendingPosition(pos);
-      setFieldValue("latitude", data.latitude);
-      setFieldValue("longitude", data.longitude);
+      // Actualización atómica de ambos campos para evitar validaciones intermedias con valores obsoletos
+      setValues((prev) => ({
+        ...prev,
+        latitude: data.latitude,
+        longitude: data.longitude,
+      }));
       setFieldTouched("latitude", true, false);
       setFieldTouched("longitude", true, false);
       setGeocodeStatus(STATUS.SUCCESS);

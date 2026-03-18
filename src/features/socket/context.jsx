@@ -16,17 +16,19 @@ const SocketContext = createContext(
 
 /** @param {{children: React.ReactNode}} props */
 export function SocketProvider({ children }) {
-  const { data: session } = useSession();
+  const { status } = useSession();
 
   useEffect(() => {
-    if (!session) return;
+    // Depender solo de `status` (string estable) evita el reconnection loop
+    // que ocurría al depender de `session` (objeto nuevo en cada render de NextAuth)
+    if (status !== 'authenticated') return;
 
     socket.connect();
 
     return () => {
       socket.disconnect();
     };
-  }, [session]);
+  }, [status]);
 
   return (
     <SocketContext.Provider value={{ socket }}>

@@ -12,38 +12,45 @@ const UsersUpdate = ({ markers, setMarkers, toggle }) => {
   const [filters] = useAtom(filtersAtom);
 
   const updateMapUsers = (abortController) => {
-    axios
-      .get(apiEndpoints.users, {
-        signal: abortController.signal,
-        params: {
-          search: encodeURIComponent(filters.search),
-          interests: filters.interestsId.join(","),
-          bbox: map.getBounds().toBBoxString(),
-        },
-        withCredentials: true,
-      })
-      .then(({ data }) => {
-        setMarkers((prev) => {
-          const usersMap = new Map([...prev].map((item) => [item._id, item]));
-          data.users.forEach((user) => {
-            if (!usersMap.has(user._id)) {
-              usersMap.set(user._id, user);
-            }
+    try {
+      axios
+        .get(apiEndpoints.users, {
+          signal: abortController.signal,
+          params: {
+            search: encodeURIComponent(filters.search),
+            interests: filters.interestsId.join(","),
+            bbox: map.getBounds().toBBoxString(),
+          },
+          withCredentials: true,
+        })
+        .then(({ data }) => {
+          setMarkers((prev) => {
+            const usersMap = new Map([...prev].map((item) => [item._id, item]));
+            data.users.forEach((user) => {
+              if (!usersMap.has(user._id)) {
+                usersMap.set(user._id, user);
+              }
+            });
+            return Array.from(usersMap.values());
           });
-          return Array.from(usersMap.values());
+        })
+        .catch((err) => {
+          if (err.name === "CanceledError") return;
+          console.error("Error fetching users:", err);
         });
-      })
-      .catch((err) => {
-        if (err.name === "CanceledError") return;
-        throw err;
-      });
+    } catch (err) {
+      console.error("Error in updateMapUsers:", err);
+    }
   };
 
   useEffect(() => {
     const abortController = new AbortController();
-    updateMapUsers(abortController);
+    // Only fetch if map is initialized and has bounds
+    if (map && map.getBounds) {
+      updateMapUsers(abortController);
+    }
     return () => abortController.abort();
-  }, [toggle]);
+  }, [toggle, map]);
 
   useMapEvents({
     moveend: () => {
