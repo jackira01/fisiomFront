@@ -124,7 +124,19 @@ export const getProfessionalDetail = async (professionalId) => {
       apiEndpoints.professionalsDetail + professionalId,
       { withCredentials: true }
     );
-    return response.data;
+    // El backend devuelve { user } pero las páginas esperan { professional }
+    const raw = response.data.user || response.data.professional || response.data;
+    const professional = {
+      ...raw,
+      name: `${raw.firstname || ''} ${raw.lastname || ''}`.trim() || raw.username || '',
+      specialties: buildSpecialties(raw),
+      rating: raw.rating || { average: 0 },
+      experience: Array.isArray(raw.experience) ? raw.experience : [],
+      coordinates: Array.isArray(raw.coordinates) ? raw.coordinates : [0, 0],
+      description: raw.description || '',
+      phone: raw.phone || '',
+    };
+    return { professional };
   } catch (error) {
     throw error;
   }
@@ -142,6 +154,9 @@ export const getProfessionalRatings = async (
     );
     return response.data;
   } catch (error) {
+    if (error?.response?.status === 404) {
+      return { comments: [], hasMoreToLoad: false };
+    }
     throw error;
   }
 };
@@ -153,6 +168,9 @@ export const hasUserCommented = async (professionalId, userId) => {
     );
     return response.data.hasCommented;
   } catch (error) {
+    if (error?.response?.status === 404) {
+      return false;
+    }
     throw error;
   }
 };
@@ -249,6 +267,9 @@ export const getServices = async ({
     const response = await axios.get(`${BASE_URL}/services${query}`);
     return response.data;
   } catch (error) {
+    if (error?.response?.status === 404) {
+      return { services: [] };
+    }
     throw error;
   }
 };

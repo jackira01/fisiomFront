@@ -6,7 +6,7 @@ export const apiEndpoints = {
   productsDetail: baseUrl + 'products/detail/',
   categories: baseUrl + 'category/',
   professionals: baseUrl + 'professionals/',
-  professionalsDetail: baseUrl + 'professionals/detail/',
+  professionalsDetail: baseUrl + 'users/detail/',
   professionalRating: baseUrl + 'professionals/rating/',
   specialties: baseUrl + 'specialty/',
   users: baseUrl + 'users/',

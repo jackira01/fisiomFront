@@ -26,7 +26,7 @@ const formatExperienceDates = (experience) => {
   return `${startFormatted} - ${endFormatted}`;
 };
 
-const ServicioExperienciaCard = ({ experience }) => {
+const ServicioExperienciaCard = ({ experience = [] }) => {
   return (
     <>
       {experience.length > 0 ? (

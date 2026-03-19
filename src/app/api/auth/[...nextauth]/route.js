@@ -93,9 +93,10 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // user = { user: { ...MongoDB doc... }, token: 'JWT string...' }
+        // user = { user: { ...MongoDB doc... }, token: 'JWT string...', refreshToken: '...' }
         const userData = user.user || {};
         token.accessToken = user.token; // Token JWT de la API
+        token.refreshToken = user.refreshToken; // Refresh token para renovar el acceso
         token.id = userData._id;
         token.role = userData.role;
         token.name =
@@ -118,9 +119,46 @@ export const authOptions = {
         delete token.error;
       }
 
-      // En cada revalidación de sesión comprobar si el token de la API expiró
-      if (token.apiTokenExpires && Date.now() > token.apiTokenExpires) {
-        token.error = 'AccessTokenExpired';
+      // Si el access token no ha expirado, devolverlo tal cual
+      if (!token.apiTokenExpires || Date.now() < token.apiTokenExpires) {
+        return token;
+      }
+
+      // Access token expirado: intentar renovarlo con el refresh token
+      if (!token.refreshToken) {
+        token.error = 'RefreshAccessTokenError';
+        return token;
+      }
+
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken: token.refreshToken }),
+        });
+
+        if (!response.ok) {
+          token.error = 'RefreshAccessTokenError';
+          return token;
+        }
+
+        const data = await response.json();
+
+        token.accessToken = data.accessToken;
+        token.refreshToken = data.refreshToken;
+
+        try {
+          const payload = JSON.parse(
+            Buffer.from(data.accessToken.split('.')[1], 'base64url').toString()
+          );
+          token.apiTokenExpires = payload.exp * 1000;
+        } catch {
+          token.apiTokenExpires = Date.now() + 60 * 60 * 1000;
+        }
+
+        delete token.error;
+      } catch {
+        token.error = 'RefreshAccessTokenError';
       }
 
       return token;

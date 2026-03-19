@@ -1,6 +1,6 @@
 import { RiArrowUpCircleLine } from 'react-icons/ri';
 import { CustomInput } from '@/features/ui';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { updateQuestionAtom } from './store/questions';
@@ -40,6 +40,14 @@ const ResponseForm = ({ questionId, user, creatorId }) => {
     e.preventDefault();
     const submitError = validate(response);
     if (submitError) return setError(submitError);
+
+    // Si el token no pudo renovarse, forzar cierre de sesión
+    if (session?.error) {
+      toast.error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+      signOut();
+      return;
+    }
+
     try {
       const finalResponse = { text: response, professionalId: user?.id };
       const { updatedQuestion } = await respondQuestion(questionId, finalResponse, session?.user?.accessToken);

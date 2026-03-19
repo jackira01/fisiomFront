@@ -42,7 +42,7 @@ const ServicioProfesionalCard = ({ professional }) => {
           <div className="vstack gap-2">
             <h2 className="m-0 uppercase">{`DR. ${professional.name}`}</h2>
             <div className="flex items-center gap-2 flex-wrap">
-              {professional?.rating.average > 0 && (
+              {professional?.rating?.average > 0 && (
                 <Chip
                   variant="flat"
                   size="sm"
@@ -55,7 +55,7 @@ const ServicioProfesionalCard = ({ professional }) => {
                   {professional.rating.average}
                 </Chip>
               )}
-              {professional?.specialties.length > 0 &&
+              {professional?.specialties?.length > 0 &&
                 professional.specialties.map((specialty) => (
                   <Chip
                     key={specialty._id}
