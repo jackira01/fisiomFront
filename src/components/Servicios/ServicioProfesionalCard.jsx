@@ -72,9 +72,8 @@ const ServicioProfesionalCard = ({ professional }) => {
                 ))}
             </div>
             <p
-              className={`text-sm ${
-                !professional.description && 'text-secondary-400 font-semibold'
-              }`}
+              className={`text-sm ${!professional.description && 'text-secondary-400 font-semibold'
+                }`}
             >
               {professional.description ||
                 'Profesional verificado de Fisiomfulness'}
