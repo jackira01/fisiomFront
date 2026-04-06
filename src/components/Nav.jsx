@@ -20,7 +20,7 @@ import { useSession } from "next-auth/react";
 const menuItems = [
   { name: "Servicios", href: "/servicios" },
   { name: "Pregunta a un experto", href: "/pregunta_experto" },
-  { name: "Comunidad", href: "/comunidad" },
+  // { name: "Comunidad", href: "/comunidad" },
   // { name: "Tratamientos", href: "/tratamientos" },
   { name: "Trabaja Con Nosotros", href: "/trabajo" },
   { name: "Blog", href: "/blog" },

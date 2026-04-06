@@ -14,7 +14,7 @@ function Question({ data, tabOpened, setQuestionTabId, canDelete, user }) {
   return (
     <div
       onClick={handleTab}
-      className="relative bg-secondary-50 py-5 px-6 rounded-sm transition-[margin] duration-150 ease-in-out hover:bg-opacity-85"
+      className="relative bg-white border border-gray-100 py-4 px-5 rounded-2xl shadow-sm transition-all duration-200 ease-in-out hover:shadow-md hover:border-primary-200 hover:bg-primary-50/30"
       style={{
         marginTop: tabOpened ? deleteBtnHeight : 0,
         cursor: canDelete ? 'pointer' : 'default',

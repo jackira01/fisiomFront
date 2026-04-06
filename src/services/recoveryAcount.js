@@ -25,7 +25,7 @@ export const resetPassword = async (data) => {
 
 export const sendEmail = async (data) => {
   const toastPromise = toast.promise(
-    axios.post(`${BASE_URL}/login/send_email`, data),
+    axios.post(`${BASE_URL}/login/recover-password`, data),
     {
       loading: "Enviando EMail...",
       success: (response) => response.data.message,

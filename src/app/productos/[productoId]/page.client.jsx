@@ -31,7 +31,7 @@ const ProductDetailPageClient = ({ productId }) => {
   return (
     <main
       className={[
-        "px-auto flex flex-col w-full items-center",
+        "px-auto flex flex-col w-full max-w-8xl mx-auto",
         "sm:justify-between sm:flex-row sm:items-start",
       ].join(" ")}
     >

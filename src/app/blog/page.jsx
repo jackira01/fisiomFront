@@ -1,4 +1,4 @@
-import { getBlogs } from '@/services/blogs';
+import { getBlogs } from '../../services/blogs';
 import BlogSection from '@/components/Blog/BlogSection';
 
 export const metadata = {

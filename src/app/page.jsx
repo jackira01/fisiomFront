@@ -1,4 +1,5 @@
 import HomeClient from "./page.client";
+import WhatsAppPopup from "./WhatsAppPopup";
 
 export const metadata = {
   title: "FisiomFulness",
@@ -16,6 +17,7 @@ export default function Home() {
       <div className="grow bg-white p-3 mb-20 max-w-2xl shadow-xl border-1 rounded-xl">
         <HomeClient />
       </div>
+      <WhatsAppPopup />
     </main>
   );
 }

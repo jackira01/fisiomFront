@@ -17,6 +17,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { FaChevronLeft } from "react-icons/fa";
 import { useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 const items = [
   { key: "/user/editar_perfil", label: "Editar perfil" },
   {
@@ -60,6 +61,12 @@ export default function DropdownUser({ name, image }) {
 
   const { data: session } = useSession();
   const role = session?.user?.role ?? "";
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const callbackUrl = searchParams?.toString()
+    ? `${pathname}?${searchParams.toString()}`
+    : pathname;
 
   const manageModal = () => {
     setTimeout(() => {
@@ -150,7 +157,10 @@ export default function DropdownUser({ name, image }) {
         </DropdownSection>
 
         <DropdownSection className="!m-0">
-          <DropdownItem key="cerrar_sesion" onClick={() => signOut()}>
+          <DropdownItem
+            key="cerrar_sesion"
+            onClick={() => signOut({ callbackUrl: '/' })}
+          >
             Cerrar sesion
           </DropdownItem>
         </DropdownSection>

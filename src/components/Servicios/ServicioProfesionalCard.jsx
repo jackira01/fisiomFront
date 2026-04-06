@@ -2,16 +2,21 @@
 import {
   Card,
   CardBody,
+  CardFooter,
   Image,
   Chip,
-  CardFooter,
+  Button,
   Divider,
   Snippet,
 } from '@nextui-org/react';
-import { FaUserDoctor } from 'react-icons/fa6';
+import { FaUserDoctor, FaWhatsapp } from 'react-icons/fa6';
 import { CiMail } from 'react-icons/ci';
-import { IoIosCall, IoMdStar } from 'react-icons/io';
+import { IoIosCall } from 'react-icons/io';
 import dynamic from 'next/dynamic';
+import { startWhatsAppChat } from '@/utils/helpers';
+
+// ? Se esta trabajando con el numero de la empresa.
+const REDIRECT_PHONE = 51901294627;
 
 const StarRatings = dynamic(() => import('react-star-ratings'), {
   ssr: false,
@@ -20,112 +25,166 @@ const ProfileMap = dynamic(() => import('./ProfileMap'), {
   ssr: false,
 });
 
+const hashToIndex = (str = '', max = 100) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash % max;
+};
+
+const getAvatarUrl = (id) => {
+  const index = hashToIndex(id);
+  const gender = index % 2 === 0 ? 'men' : 'women';
+  const num = Math.floor(index / 2);
+  return `https://randomuser.me/api/portraits/${gender}/${num}.jpg`;
+};
+
+const getProfileImage = (image, id) => {
+  if (image && image.startsWith('http')) return image;
+  return getAvatarUrl(id);
+};
+
 const ServicioProfesionalCard = ({ professional }) => {
+  const profileImage = getProfileImage(professional.image, professional._id);
+  const hasRating = professional?.rating?.average > 0;
+
   return (
-    <div className="!w-full grid gap-3 xl:items-stretch xl:grid-cols-[70%,auto] xl:gap-10">
-      <Card shadow="none" radius="none" fullWidth>
-        <CardBody className="grid gap-5 lg:grid-cols-[38%,auto] lg:pt-0 lg:items-stretch">
-          <div className="grid gap-2 md:gap-4 sm:grid-cols-2 lg:grid-cols-1">
+    <div className="!w-full grid gap-4 xl:items-stretch xl:grid-cols-[62%,auto] xl:gap-6">
+      {/* Main card */}
+      <Card shadow="sm" radius="lg" fullWidth className="overflow-hidden">
+        {/* Gradient header with photo and name */}
+        <div className="bg-gradient-to-br from-[#155e8a] via-[#1e7aad] to-[#2984AE] px-6 pt-6 pb-8 flex items-center gap-5">
+          <div className="shrink-0">
             <Image
               alt={professional.name}
-              src={professional.image || '/doctor-ejemplo.png'}
-              className="text-center size-full h-[300px] max-h-[300px] object-cover object-top"
-              radius="none"
-              shadow="none"
+              src={profileImage}
+              className="size-20 sm:size-24 object-cover object-top rounded-full ring-4 ring-white/25"
               removeWrapper
             />
-            <div className="hidden sm:block lg:hidden">
-              <ProfileMap center={professional.coordinates} zoom={13} />
-            </div>
           </div>
+          <div className="flex flex-col gap-1">
+            <h2 className="m-0 text-white uppercase font-bold tracking-wide text-lg sm:text-xl leading-tight">
+              {`Dr/a. ${professional.name}`}
+            </h2>
+            {hasRating ? (
+              <div className="flex items-center gap-2">
+                <StarRatings
+                  rating={professional.rating.average}
+                  starRatedColor="#facc15"
+                  starEmptyColor="rgba(255,255,255,0.35)"
+                  numberOfStars={5}
+                  starDimension="18px"
+                  starSpacing="1px"
+                  name="professional-rating"
+                />
+                <span className="text-white/80 text-sm font-sans">
+                  ({professional.rating.count})
+                </span>
+              </div>
+            ) : (
+              <span className="text-white/60 text-sm italic">
+                Sin valoraciones aún
+              </span>
+            )}
+          </div>
+        </div>
 
-          <div className="vstack gap-2">
-            <h2 className="m-0 uppercase">{`DR. ${professional.name}`}</h2>
-            <div className="flex items-center gap-2 flex-wrap">
-              {professional?.rating.average > 0 && (
+        <CardBody className="px-6 py-5 flex flex-col gap-4 -mt-3">
+          {/* Specialties */}
+          {professional?.specialties?.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {professional.specialties.map((specialty) => (
                 <Chip
+                  key={specialty._id}
                   variant="flat"
                   size="sm"
-                  startContent={<IoMdStar size={16} color="#ffff" />}
-                  className="bg-[#2984AE] px-3 gap-1 items-center justify-between"
-                  classNames={{
-                    content: 'text-white font-semibold font-sans',
-                  }}
+                  startContent={
+                    <FaUserDoctor className="text-[#164a37e2] ml-1" />
+                  }
+                  className="bg-[#acf5da] px-3 gap-1"
+                  classNames={{ content: 'text-[#164a37e2] tracking-wider' }}
                 >
-                  {professional.rating.average}
+                  {specialty.name}
                 </Chip>
-              )}
-              {professional?.specialties.length > 0 &&
-                professional.specialties.map((specialty) => (
-                  <Chip
-                    key={specialty._id}
-                    variant="flat"
-                    size="sm"
-                    startContent={<FaUserDoctor className="text-[#164a37e2]" />}
-                    className="bg-[#acf5da] px-3 gap-1 items-center"
-                    classNames={{
-                      content: 'text-[#164a37e2] tracking-wider',
-                    }}
-                  >
-                    {specialty.name}
-                  </Chip>
-                ))}
+              ))}
             </div>
-            <p
-              className={`text-sm ${
-                !professional.description && 'text-secondary-400 font-semibold'
+          )}
+
+          {/* Description */}
+          <p
+            className={`text-sm leading-relaxed ${!professional.description
+                ? 'text-secondary-400 italic'
+                : 'text-default-700'
               }`}
+          >
+            {professional.description ||
+              'Profesional verificado de Fisiomfulness.'}
+          </p>
+
+          <Divider />
+
+          {/* Contact info */}
+          <div className="grid sm:grid-cols-2 gap-2">
+            <Snippet
+              symbol={<CiMail size={22} className="text-[#2984AE]" />}
+              color="primary"
+              variant="flat"
+              radius="lg"
+              fullWidth
+              tooltipProps={{
+                color: 'secondary',
+                content: 'Copiar correo electrónico',
+                delay: 200,
+              }}
+              className="bg-primary-50"
+              classNames={{ pre: 'flex items-center gap-2' }}
             >
-              {professional.description ||
-                'Profesional verificado de Fisiomfulness'}
-            </p>
+              <span className="text-default-700 text-sm font-sans truncate">
+                {professional.email}
+              </span>
+            </Snippet>
+            <Snippet
+              symbol={<IoIosCall size={22} className="text-[#2984AE]" />}
+              color="primary"
+              variant="flat"
+              radius="lg"
+              fullWidth
+              tooltipProps={{
+                color: 'secondary',
+                content: 'Copiar teléfono',
+                delay: 200,
+              }}
+              className="bg-primary-50"
+              classNames={{ pre: 'flex items-center gap-2' }}
+            >
+              <span className="text-default-700 text-sm font-sans">
+                {professional.phone}
+              </span>
+            </Snippet>
           </div>
         </CardBody>
 
-        <Divider />
-
-        <CardFooter className="flex-col gap-2 bg-default-50 sm:flex-row">
-          <Snippet
-            symbol={<CiMail size={24} />}
-            color="primary"
-            variant="flat"
-            radius="none"
+        <CardFooter className="px-6 pb-5 pt-0">
+          <Button
             fullWidth
-            tooltipProps={{
-              color: 'secondary',
-              content: 'Copiar correo electrónico',
-              delay: 200,
-            }}
-            className="bg-transparent"
-            classNames={{
-              pre: 'flex items-center gap-2',
-            }}
+            radius="lg"
+            className="bg-[#25D366] hover:bg-[#1da851] text-white font-semibold tracking-wide uppercase"
+            startContent={<FaWhatsapp size={20} />}
+            onPress={() =>
+              startWhatsAppChat(
+                REDIRECT_PHONE,
+                `Hola, me gustaría obtener más información sobre el/la profesional "${professional.name}" y sus servicios disponibles. Quedo atento/a a su respuesta, saludos.`
+              )
+            }
           >
-            <span className="text-black font-sans">{professional.email}</span>
-          </Snippet>
-          <Snippet
-            symbol={<IoIosCall size={24} />}
-            color="primary"
-            variant="flat"
-            radius="none"
-            fullWidth
-            tooltipProps={{
-              color: 'secondary',
-              content: 'Copiar teléfono',
-              delay: 200,
-            }}
-            className="bg-transparent"
-            classNames={{
-              color: 'secondary',
-              pre: 'flex items-center gap-2',
-            }}
-          >
-            <span className="text-black font-sans">{professional.phone}</span>
-          </Snippet>
+            Consultar por WhatsApp
+          </Button>
         </CardFooter>
       </Card>
 
-      <div className="h-auto sm:hidden lg:block">
+      {/* Map panel */}
+      <div className="hidden sm:block rounded-xl overflow-hidden h-[280px] xl:h-auto min-h-[280px] shadow-sm">
         <ProfileMap center={professional.coordinates} zoom={13} />
       </div>
     </div>

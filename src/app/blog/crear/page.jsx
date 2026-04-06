@@ -1,4 +1,4 @@
-import { getTypes } from '@/services/types';
+import { getTypes } from '../../../services/types';
 import BlogForm from '@/components/Blog/BlogForm';
 
 export const metadata = {

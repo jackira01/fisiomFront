@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { useAtom, useAtomValue } from 'jotai';
 import { filtersAtom, questionsAtom } from './store/questions';
 import { createQuestion } from '@/services/questions';
+import { useSession } from 'next-auth/react';
 
 const initialValues = {
   text: '',
@@ -28,13 +29,14 @@ function QuestionForm() {
   const [store, setStore] = useAtom(questionsAtom);
   const { specialtyId } = useAtomValue(filtersAtom);
   const { specialties, questions } = store;
+  const { data: session } = useSession();
 
   const handleSubmit = async (values, { resetForm }) => {
     try {
       const sameSpecialty = values.specialtyId === specialtyId;
       const generalQuestion = values.specialtyId === '1';
       if (generalQuestion) delete values.specialtyId;
-      const { newQuestion } = await createQuestion(values);
+      const { newQuestion } = await createQuestion(values, session?.user?.accessToken);
       if (sameSpecialty) setStore({ ...store, questions: [newQuestion, ...questions] });
       resetForm();
       toast.success('Pregunta creada correctamente');
@@ -57,7 +59,7 @@ function QuestionForm() {
         handleBlur,
         handleChange,
       }) => (
-        <Form className="w-full flex flex-col gap-4">
+        <Form className="w-full flex flex-col gap-3 bg-white border border-primary-100 rounded-2xl p-5 shadow-sm">
           <Select
             size="md"
             variant="bordered"
@@ -96,11 +98,11 @@ function QuestionForm() {
           />
           <CustomButton
             type="submit"
-            className="max-w-52 uppercase !bg-[#3DAADD] rounded-sm"
+            className="max-w-52 uppercase font-semibold tracking-wide rounded-lg bg-primary-500 text-white shadow-sm hover:bg-primary-600 transition-colors"
             isDisabled={Object.keys(errors).length > 0 || isSubmitting}
             isLoading={isSubmitting}
           >
-            {isSubmitting ? 'Enviando' : 'Enviar'}
+            {isSubmitting ? 'Enviando...' : 'Enviar pregunta'}
           </CustomButton>
         </Form>
       )}

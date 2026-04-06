@@ -6,6 +6,7 @@ import {
   getProfessionalBlogs,
   updateBlog,
 } from '@/services/blogs';
+import { uploadImageToCloudinary } from '@/services/cloudinary';
 import { Pagination, Spinner } from '@nextui-org/react';
 import InfoCard from './InfoCard';
 import EditBlogModal from './EditBlogModal';
@@ -47,14 +48,25 @@ const MyBlogs = ({ session, types }) => {
     if (option !== "update" && option !== "delete") return;
     try {
       if (option == 'update') {
-        const formData = new FormData();
-        for (const name in newValues) {
-          formData.append(name, newValues[name]);
+        let imageUrl = newValues.image;
+        let imagePublicId = newValues.id_image;
+
+        if (newValues.image instanceof File) {
+          const { secure_url, public_id } = await uploadImageToCloudinary(newValues.image, 'blogs');
+          imageUrl = secure_url;
+          imagePublicId = public_id;
         }
-        await updateBlog(blogIdToHandle, formData);
+
+        await updateBlog(blogIdToHandle, {
+          title: newValues.title,
+          text: newValues.text,
+          type_id: newValues.type_id,
+          image: imageUrl,
+          id_image: imagePublicId,
+        }, session?.user?.accessToken);
         setEditModalOpen(false)
       } else {
-        await deleteBlog(blogIdToHandle);
+        await deleteBlog(blogIdToHandle, session?.user?.accessToken);
         setConfirmModalOpen(false)
       }
       fetchBlogs();

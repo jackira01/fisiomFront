@@ -16,6 +16,8 @@ const exclude = [
   "/about",
 ];
 
+import MaintenanceMode from "@/components/MaintenanceMode";
+
 export function Overlay({ children }) {
   const pathname = usePathname();
   const { socket } = useSocket();
@@ -35,15 +37,18 @@ export function Overlay({ children }) {
     };
   }, [socket]);
 
-  if (exclude.includes(pathname)) {
-    return children;
-  }
-
   return (
-    <div className="min-h-screen grid grid-rows-[auto_1fr_auto]">
-      <Nav />
-      {children}
-      <Footer />
-    </div>
+    <>
+      <MaintenanceMode />
+      {exclude.includes(pathname) ? (
+        children
+      ) : (
+        <div className="min-h-screen grid grid-rows-[auto_1fr_auto]">
+          <Nav />
+          {children}
+          <Footer />
+        </div>
+      )}
+    </>
   );
 }

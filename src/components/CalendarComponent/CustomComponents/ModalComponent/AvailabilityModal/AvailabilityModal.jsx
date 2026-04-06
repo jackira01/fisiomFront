@@ -52,7 +52,7 @@ export const AvailabilityModal = memo(() => {
               onClick={(e) => setIsCreateUpdate("update")}
               color="primary"
             >
-              Actulizar
+              Actualizar
             </Button>
           ) : isCreateUpdate === "update" ? (
             <Button
@@ -73,3 +73,5 @@ export const AvailabilityModal = memo(() => {
     </div>
   );
 });
+
+AvailabilityModal.displayName = "AvailabilityModal";

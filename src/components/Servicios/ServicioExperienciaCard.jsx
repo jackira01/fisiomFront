@@ -1,5 +1,5 @@
 'use client';
-import { Card, CardBody, CardHeader, Chip } from '@nextui-org/react';
+import { Card, CardBody, Chip } from '@nextui-org/react';
 import { format, parse } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -26,56 +26,65 @@ const formatExperienceDates = (experience) => {
   return `${startFormatted} - ${endFormatted}`;
 };
 
-const ServicioExperienciaCard = ({ experience }) => {
+const ServicioExperienciaCard = ({ experience = [] }) => {
   return (
-    <>
+    <div className="flex flex-col">
       {experience.length > 0 ? (
-        experience.map((exp) => (
-          <Card
-            key={exp._id}
-            isHoverable
-            radius="none"
-            shadow="none"
-            className="bg-[#EBF7FB] p-1 lg:p-3 lg:px-9 hover:!bg-[#D8EEF8] overflow-visible"
-          >
-            <CardHeader className="flex-col gap-1 md:flex-row md:gap-3 justify-between">
-              <h3 className="m-0 text-center text-lg font-semibold tracking-wide text-secondary-400">
-                {exp.title}
-              </h3>
-              <span className="uppercase text-nowrap text-sm text-secondary-600 italic">
-                {formatExperienceDates(exp)}
-              </span>
-            </CardHeader>
-            <CardBody className="pt-0">
-              <Chip
-                size="sm"
-                variant="flat"
-                className="bg-[#64efbce2] px-3"
-                classNames={{
-                  content:
-                    'text-[#164a37e2] uppercase font-semibold tracking-wider',
-                }}
+        <div className="relative pl-6">
+          {/* Vertical timeline line */}
+          <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-default-200" />
+
+          {experience.map((exp, index) => (
+            <div key={exp._id} className="relative mb-5 last:mb-0">
+              {/* Timeline dot */}
+              <div className="absolute -left-6 top-3 w-3 h-3 rounded-full bg-[#2984AE] ring-2 ring-white shadow-sm" />
+
+              <Card
+                isHoverable
+                radius="lg"
+                shadow="sm"
+                className="border border-transparent hover:border-[#2984AE]/30 transition-colors"
               >
-                {exp.company}
-              </Chip>
-              <p className="mt-2 break-all">{exp.description}</p>
-            </CardBody>
-          </Card>
-        ))
+                <CardBody className="p-4 lg:p-5 gap-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1">
+                    <h3 className="m-0 text-base font-semibold tracking-wide text-default-800">
+                      {exp.title}
+                    </h3>
+                    <span className="text-nowrap text-xs text-default-500 italic bg-default-100 rounded-full px-3 py-1 self-start">
+                      {formatExperienceDates(exp)}
+                    </span>
+                  </div>
+                  <Chip
+                    size="sm"
+                    variant="flat"
+                    className="bg-[#64efbce2] px-3 w-fit"
+                    classNames={{
+                      content:
+                        'text-[#164a37e2] uppercase font-semibold tracking-wider',
+                    }}
+                  >
+                    {exp.company}
+                  </Chip>
+                  {exp.description && (
+                    <p className="text-sm text-default-600 leading-relaxed mt-1">
+                      {exp.description}
+                    </p>
+                  )}
+                </CardBody>
+              </Card>
+            </div>
+          ))}
+        </div>
       ) : (
-        <Card
-          radius="none"
-          shadow="none"
-          className="h-full bg-[#EBF7FB] p-3 lg:px-9"
-        >
-          <CardBody>
+        <Card radius="lg" shadow="sm" className="h-full">
+          <CardBody className="py-10">
             <p className="m-auto text-center text-lg font-semibold tracking-wide text-secondary-400">
               Este profesional no ha cargado su experiencia
             </p>
           </CardBody>
         </Card>
       )}
-    </>
+    </div>
   );
 };
 

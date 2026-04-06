@@ -6,6 +6,7 @@ import { listInputsUser } from "@/components/Registro/listInputs";
 import { formikZodValidator } from "@/utils/validations";
 import { updateProfessionalSchema } from "@/utils/validations/professionalSchema";
 import { updateProfessional, verifyCredentials } from "@/services/users";
+import { uploadImageToCloudinary } from "@/services/cloudinary";
 import { getFormdataFromObj } from "@/utils/helpers";
 import { FaUserDoctor } from "react-icons/fa6";
 import { TfiReload } from "react-icons/tfi";
@@ -41,6 +42,7 @@ const EditProfessionalMain = ({
     streetName: address?.streetName || "",
     streetNumber: address?.streetNumber || "",
     floorAppartment: address?.floorAppartment || "",
+    additionalInfo: address?.additionalInfo || "",
     city: address?.city || "",
     state: address?.state || "",
     country: address?.country || "",
@@ -53,8 +55,23 @@ const EditProfessionalMain = ({
     if (!verified) return;
 
     try {
-      const formData = getFormdataFromObj(newValues);
-      const { data } = await updateProfessional(_id, formData);
+      let imageUrl = undefined;
+      let imagePublicId = undefined;
+      if (newValues.image instanceof File) {
+        const { secure_url, public_id } = await uploadImageToCloudinary(newValues.image, 'users');
+        imageUrl = secure_url;
+        imagePublicId = public_id;
+      }
+
+      const payload = getFormdataFromObj({
+        ...newValues,
+        ...(imageUrl && { image: imageUrl }),
+      });
+      // Eliminar el File del payload — el backend ya no lo necesita
+      payload.delete('image');
+      if (imageUrl) payload.set('image', imageUrl);
+
+      const { data } = await updateProfessional(_id, payload);
       await updateSessionUser(data.updated);
       setIsSuccessModalOpen(true);
     } catch (error) {

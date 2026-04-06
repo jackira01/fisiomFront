@@ -27,15 +27,17 @@ function PreguntaExpertoClient({ initialData }) {
       {status === 'authenticated' ? (
         <QuestionForm />
       ) : (
-        <p className="px-3 py-5 bg-primary-500 text-center w-full text-white text-lg">
-          <Link
-            href="/login"
-            className="text-primary-50 hover:underline font-semibold"
-          >
-            Inicia sesión
-          </Link>{' '}
-          para enviar una pregunta
-        </p>
+        <div className="w-full px-5 py-4 bg-gradient-to-r from-primary-500 to-primary-400 text-white rounded-2xl shadow-md text-center">
+          <p className="text-base font-medium">
+            <Link
+              href="/login"
+              className="underline underline-offset-2 font-bold hover:text-primary-50 transition-colors"
+            >
+              Inicia sesión
+            </Link>{' '}
+            para enviar una pregunta a nuestros expertos
+          </p>
+        </div>
       )}
       <QuestionFilters />
       <QuestionsContainer user={session?.user} />

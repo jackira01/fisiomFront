@@ -1,5 +1,6 @@
 import { BASE_URL } from "@/utils/api";
 import { getErrorMessage } from "@/utils/utils";
+import { uploadImageToCloudinary } from "@/services/cloudinary";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -25,18 +26,37 @@ export const axiosLogin = async (user) => {
 
 //#region Register user
 export const axiosRegisterUserForm = async (user) => {
+  let imageUrl = undefined;
+  if (user.image instanceof File) {
+    const { secure_url } = await uploadImageToCloudinary(user.image, 'users');
+    imageUrl = secure_url;
+  }
+
+  const payload = {
+    email: user.email,
+    password: user.password,
+    username: user.email.split("@")[0],
+    firstname: user.name || "",
+    ...(user.phone && { phone: user.phone }),
+    ...(imageUrl && { image: imageUrl }),
+  };
+
   return toast.promise(
-    axios.post(`${BASE_URL}/register/user`, user, {
+    axios.post(`${BASE_URL}/users/create`, payload, {
       withCredentials: true,
     }),
     {
       loading: "Registrandose...",
-      success: (response) => response.data.message,
+      success: (response) => {
+        return response.data.message || "Usuario registrado exitosamente";
+      },
       error: (error) => {
-        if (error.response) {
-          return error.response.data.message;
-        } else {
+        if (error.response && error.response.data) {
+          return error.response.data.message || "Error al registrar el usuario";
+        } else if (error.message) {
           return error.message;
+        } else {
+          return "Error desconocido al registrar";
         }
       },
     }
@@ -51,12 +71,18 @@ export const axiosRegisterProfessionalForm = async (user) => {
     }),
     {
       loading: "Registrandose...",
-      success: (response) => response.data.message,
+      success: (response) => {
+        // Retornar el mensaje del servidor o un mensaje por defecto
+        return response.data.message || "Registro completado. Pendiente de aprobación";
+      },
       error: (error) => {
-        if (error.response) {
-          return error.response.data.message;
-        } else {
+        // Manejar diferentes tipos de errores
+        if (error.response && error.response.data) {
+          return error.response.data.message || "Error al registrar el usuario";
+        } else if (error.message) {
           return error.message;
+        } else {
+          return "Error desconocido al registrar";
         }
       },
     }
@@ -109,7 +135,7 @@ export const verifyCredentials = async (email, password) => {
   } catch (error) {
     toast.error(
       error.response.data.message ||
-        "No se pudieron verificar las credenciales de la cuenta",
+      "No se pudieron verificar las credenciales de la cuenta",
       {
         className: "text-center",
       }
@@ -129,11 +155,10 @@ export const httpLogout = async () => {
 };
 
 //#region getSpecificUserData
-//esta funcion trae de la API solo las propiedades especificadas por parametro de los usuarios.
-//el valor recibido es un objeto con las propiedades que se quiere pedir con valor 1
-export const getSpecificUserData = async (specificData) => {
+//trae de la API el listado de usuarios (nombre y email) para el selector de pacientes
+export const getSpecificUserData = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/users`, specificData);
+    const response = await axios.get(`${BASE_URL}/users`);
     return response;
   } catch (error) {
     return error;

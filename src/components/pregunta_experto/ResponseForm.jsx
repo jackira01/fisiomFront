@@ -1,6 +1,6 @@
 import { RiArrowUpCircleLine } from 'react-icons/ri';
 import { CustomInput } from '@/features/ui';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useState } from 'react';
 import { useSetAtom } from 'jotai';
 import { updateQuestionAtom } from './store/questions';
@@ -21,13 +21,15 @@ const validate = (value) => {
   return !result.success ? errorMessage : '';
 };
 
-const ResponseForm = ({ questionId, user }) => {
+const ResponseForm = ({ questionId, user, creatorId }) => {
   const [response, setResponse] = useState('');
   const [error, setError] = useState('');
   const updateQuestion = useSetAtom(updateQuestionAtom);
+  const { data: session } = useSession();
   const isProfessional = user?.role === roles.PROFESSIONAL;
+  const isCreator = user?.id && creatorId && user.id === creatorId;
 
-  if (!isProfessional) return null;
+  if (!isProfessional || isCreator) return null;
 
   const handleChange = (e) => {
     setResponse(e.target.value);
@@ -38,9 +40,17 @@ const ResponseForm = ({ questionId, user }) => {
     e.preventDefault();
     const submitError = validate(response);
     if (submitError) return setError(submitError);
+
+    // Si el token no pudo renovarse, forzar cierre de sesión
+    if (session?.error) {
+      toast.error('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+      signOut();
+      return;
+    }
+
     try {
       const finalResponse = { text: response, professionalId: user?.id };
-      const { updatedQuestion } = await respondQuestion(questionId, finalResponse);
+      const { updatedQuestion } = await respondQuestion(questionId, finalResponse, session?.user?.accessToken);
       updateQuestion(updatedQuestion);
       toast.success('Respuesta enviada correctamente!');
     } catch (error) {
@@ -64,8 +74,8 @@ const ResponseForm = ({ questionId, user }) => {
           </button>
         }
         classNames={{
-          input: 'px-1',
-          inputWrapper: '!bg-white border-1 border-[#BABABA] rounded-none',
+          input: 'px-1 text-sm',
+          inputWrapper: '!bg-white border border-primary-200 rounded-lg hover:border-primary-400 transition-colors',
         }}
       />
     </form>

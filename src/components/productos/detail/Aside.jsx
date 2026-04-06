@@ -33,8 +33,8 @@ const Aside = ({ prod }) => {
   }, [prod]);
 
   return (
-    <aside className=" min-h-full xl:w-[30%]">
-      <div className="flex flex-col mt-10 mb-10 gap-10">
+    <aside className="w-full sm:w-[320px] shrink-0 px-4 sm:px-0 sm:pr-6 lg:pr-8 py-8">
+      <div className="flex flex-col gap-6">
         <MetodosDePago />
         <ProdRelacionados prods={prods} />
       </div>

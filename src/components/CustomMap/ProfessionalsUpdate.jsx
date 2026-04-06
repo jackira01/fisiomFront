@@ -12,41 +12,48 @@ const ProfessionalsUpdate = ({ markers, setMarkers, toggle }) => {
   const [filters] = useAtom(filtersAtom);
 
   const updateMapProfessionals = (abortController) => {
-    axios
-      .get(apiEndpoints.professionals, {
-        signal: abortController.signal,
-        params: {
-          search: encodeURIComponent(filters.search.join(",")),
-          city: filters.city,
-          specialtyId: filters.specialtyId,
-          bbox: map.getBounds().toBBoxString(),
-        },
-        withCredentials: true,
-      })
-      .then(({ data }) => {
-        setMarkers((prev) => {
-          const professionalsMap = new Map(
-            [...prev].map((item) => [item._id, item])
-          );
-          data.professionals.forEach((professional) => {
-            if (!professionalsMap.has(professional._id)) {
-              professionalsMap.set(professional._id, professional);
-            }
+    try {
+      axios
+        .get(apiEndpoints.professionals, {
+          signal: abortController.signal,
+          params: {
+            search: encodeURIComponent(filters.search.join(",")),
+            city: filters.city,
+            specialtyId: filters.specialtyId,
+            bbox: map.getBounds().toBBoxString(),
+          },
+          withCredentials: true,
+        })
+        .then(({ data }) => {
+          setMarkers((prev) => {
+            const professionalsMap = new Map(
+              [...prev].map((item) => [item._id, item])
+            );
+            data.professionals.forEach((professional) => {
+              if (!professionalsMap.has(professional._id)) {
+                professionalsMap.set(professional._id, professional);
+              }
+            });
+            return Array.from(professionalsMap.values());
           });
-          return Array.from(professionalsMap.values());
+        })
+        .catch((err) => {
+          if (err.name === "CanceledError") return;
+          console.error("Error fetching professionals:", err);
         });
-      })
-      .catch((err) => {
-        if (err.name === "CanceledError") return;
-        throw err;
-      });
+    } catch (err) {
+      console.error("Error in updateMapProfessionals:", err);
+    }
   };
 
   useEffect(() => {
     const abortController = new AbortController();
-    updateMapProfessionals(abortController);
+    // Only fetch if map is initialized and has bounds
+    if (map && map.getBounds) {
+      updateMapProfessionals(abortController);
+    }
     return () => abortController.abort();
-  }, [toggle]);
+  }, [toggle, map]);
 
   useMapEvents({
     moveend: () => {

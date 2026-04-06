@@ -21,6 +21,7 @@ import { formatDateFromTo } from "@/utils/filters/timeFormat";
 import { useSession } from "next-auth/react";
 import { getAvailability } from "@/services/professionals";
 import toast from "react-hot-toast";
+import { calendar } from "@nextui-org/react";
 
 export const CalendarContext = createContext();
 
@@ -48,8 +49,7 @@ export const CalendarProvider = ({ children }) => {
   const [eventInfo, setEventInfo] = useState({
     _patient: "",
     patientName: "",
-    title: "",
-    status: "PENDING",
+    _service: "",
     additionalDescription: "",
     start: currentDateMoment,
     end: currentDateEnd,
@@ -66,14 +66,20 @@ export const CalendarProvider = ({ children }) => {
   });
 
   const fetchData = async (_id, from, to) => {
+    if (!_id || !from || !to) {
+      console.error("Faltan parámetros necesarios para hacer la solicitud.");
+      setCalendarIsLoading(false);
+      return;
+  }
     setCalendarIsLoading(true);
     try {
       const responseAppointments = await getAppointment(_id, from, to);
-      const newEvents = filterAppointments(
-        responseAppointments.data.appointments,
-      );
+      console.log(responseAppointments, "responseApointments")
+      const newEvents = filterAppointments(responseAppointments.data.appointments);
+      console.log(newEvents, "newEvents")
 
       const responseAvailability = await getAvailability(_id);
+
 
       setCalendarState((prevState) => ({
         ...prevState,
@@ -101,7 +107,7 @@ export const CalendarProvider = ({ children }) => {
 
   const handleSaveEvent = useCallback(async () => {
     const { myEvents, editEvent } = calendarState;
-    if (!eventInfo.title || !eventInfo._patient)
+    if (!eventInfo._service || !eventInfo._patient)
       return toast.error("complete los campos");
     if (currentDateMoment > moment(eventInfo.start).format(standarFormartDate))
       return toast.error("No se puede crear en esta fecha");
@@ -109,7 +115,7 @@ export const CalendarProvider = ({ children }) => {
     if (editEvent) {
       await updateAppointment(eventInfo);
       await fetchData(
-        calendarState._professional,
+         calendarState._professional,
         calendarState.dateFromTo.from,
         calendarState.dateFromTo.to,
       );

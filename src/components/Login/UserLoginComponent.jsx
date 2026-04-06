@@ -10,6 +10,7 @@ import { EyeSlashFilledIcon } from "../CustomComponentForm/EyeSlashFilledIcon";
 import { z } from "zod";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { FcGoogle } from "react-icons/fc";
 
 const initialValues = {
   email: "",
@@ -17,7 +18,7 @@ const initialValues = {
 };
 
 const loginSchema = z.object({
-  email: zodStrRequired().email("No es un email"),
+  email: zodStrRequired().email("No es un email válido"),
   password: zodStrRequired(),
 });
 
@@ -28,18 +29,35 @@ const UserLoginComponent = () => {
   const toggleVisibility = () => setIsVisible(!isVisible);
 
   const handleLogin = async (values) => {
+
     const responseNextAuth = await signIn("credentials", {
       email: values.email,
       password: values.password,
       redirect: false,
     });
 
-    if (!responseNextAuth.ok) {
-      return toast.error(responseNextAuth.error);
+    if (responseNextAuth.ok && responseNextAuth.profesional) {
+      if (!responseNextAuth.profesional.isApproved) {
+        toast.error(responseNextAuth.error);
+
+        return;
+      }
+    }
+    if (responseNextAuth.error) {
+      console.log("Error de autenticación:", responseNextAuth.error);
+
+      toast.error(responseNextAuth.error);
+      return;
     }
 
-    toast.success("Has iniciado sesión correctamente");
-    router.push("/");
+    if (responseNextAuth.ok) {
+      toast.success("Has iniciado sesión correctamente");
+      router.push("/");
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    await signIn("google", { callbackUrl: "/" });
   };
 
   return (
@@ -63,7 +81,7 @@ const UserLoginComponent = () => {
             variant="flat"
             placeholder="Email"
             value={values.email}
-            isInvalid={touched.email && errors.email ? true : false}
+            isInvalid={touched.email && !!errors.email}
             errorMessage={touched.email && errors.email}
             onBlur={handleBlur}
             onChange={handleChange}
@@ -78,7 +96,7 @@ const UserLoginComponent = () => {
             variant="flat"
             placeholder="Contraseña"
             value={values.password}
-            isInvalid={touched.password && errors.password ? true : false}
+            isInvalid={touched.password && !!errors.password}
             errorMessage={touched.password && errors.password}
             onBlur={handleBlur}
             onChange={handleChange}
@@ -108,6 +126,16 @@ const UserLoginComponent = () => {
             isDisabled={Object.keys(errors).length > 0 || isSubmitting}
           >
             Ingresar
+          </Button>
+
+          <Button
+            className="flex items-center justify-center mt-2 text-gray-800 uppercase rounded-none font-semibold tracking-wider border border-gray-300"
+            onClick={handleGoogleLogin}
+            isDisabled={isSubmitting}
+            type="button"
+          >
+            <FcGoogle className="mr-2" size={24} />
+            Ingresar con Google
           </Button>
 
           <div className="flex flex-row justify-center items-center gap-4 mt-8">

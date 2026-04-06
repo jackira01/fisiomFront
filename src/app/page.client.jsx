@@ -1,7 +1,6 @@
 // @ts-check
 "use client";
-import { useState } from "react";
-import { ciudades } from "./data";
+import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { filtersAtom } from "../components/Servicios/store/servicios";
 import { BiSolidWebcam, BiSolidHome } from "react-icons/bi";
@@ -9,18 +8,21 @@ import { FaBriefcaseMedical, FaLocationDot } from "react-icons/fa6";
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { CustomButton } from "@/features/ui";
-import useSWRImmutable from "swr/immutable";
 import { useRouter } from "next/navigation";
-import { BASE_URL } from "@/utils/api";
+import { getProfessionalFilters } from "@/services/professionals";
+import {
+  buildSpecialtyOptions,
+  getCitiesForState,
+  mapColombiaStates,
+} from "@/utils/professionalFilters";
 
 /**
- * @typedef {{id: string; name: string}} Specialty
- * @typedef {{count: number, results: Specialty[]}} SpecialtyResponse
- * @typedef {{search: string[], specialtyId: string, city: string, page: number}} Filter
+ * @typedef {{id: string; name: string}} SelectOption
+ * @typedef {{search: string[], specialtyId: string, state: string, city: string, country: string, page: number}} Filter
  */
 
 /**
- * @typedef {{id: string; name: string, country: string, coordinates: { latitude: number, longitude: number }}} City
+ * @typedef {{id: string; name: string, country?: string, cities?: SelectOption[]}} LocationOption
  */
 
 /**
@@ -29,7 +31,7 @@ import { BASE_URL } from "@/utils/api";
  *   name?: string;
  *   label: string;
  *   placeholder: string;
- *   items: Specialty[] | City[];
+ *   items: SelectOption[] | LocationOption[];
  *   itemsStartContent: keyof JSX.IntrinsicElements | import("react-icons").IconType;
  *   onSelectionChange?: ((key: React.Key | null) => void) | undefined
  *   selectedKeys?: string[];
@@ -65,7 +67,7 @@ const CustomSelect = ({
       {...props}
     >
       {(item) => (
-        <AutocompleteItem key={item.id} textValue={item.name}>
+        <AutocompleteItem key={item.id || item.name} textValue={item.name}>
           <div className="flex items-center gap-2">
             <DynamicTag alt={item.name} className="text-primary-300" />
             <span>{item.name}</span>
@@ -76,31 +78,48 @@ const CustomSelect = ({
   );
 };
 
-/** @param {string} url */
-const fetcher = (url) => fetch(`${BASE_URL}${url}`).then((r) => r.json());
+const useProfessionalFilterOptions = () => {
+  const [filterOptions, setFilterOptions] = useState({
+    specialties: [],
+    states: [],
+  });
+
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const data = await getProfessionalFilters();
+        setFilterOptions({
+          specialties: buildSpecialtyOptions(data.specialties || []),
+          states: mapColombiaStates(),
+        });
+      } catch (error) {
+        console.error("Error fetching professional filter options:", error);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
+
+  return filterOptions;
+};
 
 const CitaDomiciliaria = () => {
-  /** @type {import("swr").SWRResponse<SpecialtyResponse>} */
-  const { data } = useSWRImmutable("/specialty", fetcher, {
-    shouldRetryOnError: false,
-  });
-  const specialties = data?.results.length
-    ? data.results
-    : [{ id: "1", name: "..." }];
-
+  const { specialties, states } = useProfessionalFilterOptions();
   const [filters, setFilters] = useAtom(filtersAtom);
   const [localSpecialtyId, setLocalSpecialtyId] = useState(
-    /** @type {string} */ filters.specialtyId
+    /** @type {string} */ filters.specialtyId,
   );
-  const cityId = ciudades.find((city) => city.name === filters.city)?.id || "";
-  const [localCityId, setLocalCityId] = useState(/** @type {string} */ cityId);
+  const [localState, setLocalState] = useState(/** @type {string} */ filters.state);
+  const [localCity, setLocalCity] = useState(/** @type {string} */ filters.city);
   const router = useRouter();
+  const cities = getCitiesForState(states, localState);
 
   const handleClick = () => {
-    const ciudad = ciudades.find((city) => city.id === localCityId);
     setFilters((prev) => ({
       ...prev,
-      city: ciudad?.name || "",
+      state: localState,
+      city: localCity,
+      country: localState ? "Colombia" : "",
       specialtyId: localSpecialtyId,
       page: 1,
     }));
@@ -125,23 +144,41 @@ const CitaDomiciliaria = () => {
       />
 
       <CustomSelect
-        label="Ciudad"
-        placeholder="Seleccione una ciudad"
-        items={ciudades}
-        selectedKey={localCityId}
+        label="Departamento"
+        placeholder="Seleccione un departamento"
+        items={states}
+        selectedKey={localState}
         itemsStartContent={FaLocationDot}
         onSelectionChange={(value) => {
           if (value) {
-            setLocalCityId(String(value));
+            setLocalState(String(value));
+            setLocalCity("");
           } else {
-            setLocalCityId("");
+            setLocalState("");
+            setLocalCity("");
           }
         }}
       />
 
+      <CustomSelect
+        label="Ciudad"
+        placeholder="Seleccione una ciudad"
+        items={cities}
+        selectedKey={localCity}
+        itemsStartContent={FaLocationDot}
+        onSelectionChange={(value) => {
+          if (value) {
+            setLocalCity(String(value));
+          } else {
+            setLocalCity("");
+          }
+        }}
+        isDisabled={!localState}
+      />
+
       <CustomButton
         onClick={handleClick}
-        isDisabled={!localSpecialtyId && !localCityId}
+        isDisabled={!localSpecialtyId && !localState && !localCity}
         className="rounded-xl sm:self-end self-start px-12 shrink-0"
       >
         Buscar
@@ -151,14 +188,7 @@ const CitaDomiciliaria = () => {
 };
 
 const CitaOnline = () => {
-  /** @type {import("swr").SWRResponse<SpecialtyResponse>} */
-  const { data } = useSWRImmutable("/specialty", fetcher, {
-    shouldRetryOnError: false,
-  });
-  const specialties = data?.results.length
-    ? data.results
-    : [{ id: "1", name: "..." }];
-
+  const { specialties } = useProfessionalFilterOptions();
   const [filters, setFilters] = useAtom(filtersAtom);
   const [localSpecialtyId, setLocalSpecialtyId] = useState(filters.specialtyId);
   const router = useRouter();
@@ -167,6 +197,9 @@ const CitaOnline = () => {
     setFilters((filters) => ({
       ...filters,
       specialtyId: localSpecialtyId,
+      state: "",
+      city: "",
+      country: "",
       page: 1,
     }));
     router.push(`/servicios`);
@@ -206,7 +239,7 @@ export default function HomeClient() {
 
   // NOTE: https://github.com/microsoft/TypeScript/issues/27387
   const [selected, setSelected] = useState(
-    /** @type {Key} */ ("citaDomiciliaria")
+    /** @type {Key} */("citaDomiciliaria"),
   );
 
   return (
