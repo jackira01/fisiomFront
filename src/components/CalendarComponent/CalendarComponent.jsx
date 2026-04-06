@@ -99,14 +99,10 @@ export default function CalendarComponent({ user, isAuth }) { // user solo conti
 
   //get to user data every mounted component
   useEffect(() => {
-    const specificData = {
-      name: 1,
-      email: 1,
-    };
-    getSpecificUserData(specificData).then((response) => {
+    getSpecificUserData().then((response) => {
       setCalendarState((prevState) => ({
         ...prevState,
-        usersNames: response.data,
+        usersNames: response.data?.users ?? [],
       }));
     });
   }, []);

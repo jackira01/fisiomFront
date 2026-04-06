@@ -63,10 +63,10 @@ const MyBlogs = ({ session, types }) => {
           type_id: newValues.type_id,
           image: imageUrl,
           id_image: imagePublicId,
-        });
+        }, session?.user?.accessToken);
         setEditModalOpen(false)
       } else {
-        await deleteBlog(blogIdToHandle);
+        await deleteBlog(blogIdToHandle, session?.user?.accessToken);
         setConfirmModalOpen(false)
       }
       fetchBlogs();

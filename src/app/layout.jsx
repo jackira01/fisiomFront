@@ -1,4 +1,4 @@
-import { Raleway } from "next/font/google";
+import { Merriweather } from "next/font/google";
 import { Providers } from "./providers";
 import { Overlay } from "./overlay";
 
@@ -11,8 +11,8 @@ export const metadata = {
   description: "Sitio web para ofrecer servicios de fisioterapia",
 };
 
-const raleway = Raleway({
-  weight: ["200", "300", "400", "700"],
+const merriweather = Merriweather({
+  weight: ["300", "400", "700", "900"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -20,7 +20,7 @@ const raleway = Raleway({
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <body className={`${raleway.className} `}>
+      <body className={`${merriweather.className} `}>
         <Providers>
           <Overlay>{children}</Overlay>
           <Toaster

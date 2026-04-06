@@ -57,7 +57,7 @@ const UserLoginComponent = () => {
   };
 
   const handleGoogleLogin = async () => {
-    window.location.href = "http://localhost:3000/api/auth/google";
+    await signIn("google", { callbackUrl: "/" });
   };
 
   return (
@@ -128,16 +128,15 @@ const UserLoginComponent = () => {
             Ingresar
           </Button>
 
-          {/* Botón de Google — deshabilitado temporalmente
           <Button
-            className="flex items-center justify-center mt-2 text-gray-800 uppercase rounded-none font-semibold tracking-wider"
+            className="flex items-center justify-center mt-2 text-gray-800 uppercase rounded-none font-semibold tracking-wider border border-gray-300"
             onClick={handleGoogleLogin}
             isDisabled={isSubmitting}
+            type="button"
           >
             <FcGoogle className="mr-2" size={24} />
             Ingresar con Google
           </Button>
-          */}
 
           <div className="flex flex-row justify-center items-center gap-4 mt-8">
             <a className="text-sm hover:underline" href="/password_olvidada">

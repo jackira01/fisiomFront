@@ -58,11 +58,11 @@ export const PatientNameAutocomplete = () => {
         }
       >
         {(item) => (
-          <AutocompleteItem key={item._id} textValue={item.name}>
+          <AutocompleteItem key={item._id} textValue={`${item.firstname} ${item.lastname}`}>
             <div className="flex justify-between items-center">
               <div className="flex gap-2 items-center">
                 <div className="flex flex-col">
-                  <span className="text-small">{item.name}</span>
+                  <span className="text-small">{item.firstname} {item.lastname}</span>
                   <span className="text-tiny text-default-400">
                     {item.email}
                   </span>

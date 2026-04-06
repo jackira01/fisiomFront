@@ -51,7 +51,7 @@ export const updateAppointment = async (data) => {
 
 //#region Delete Appointment
 export const deleteAppointment = async (_id) => {
-    return toast.promise(axios.post(`${BASE_URL}/appointments/delete/${_id}`, {
+    return toast.promise(axios.post(`${BASE_URL}/appointments/delete/${_id}`, {}, {
         withCredentials: true,
     }), {
         loading: 'Actualizando Cita...',

@@ -155,11 +155,10 @@ export const httpLogout = async () => {
 };
 
 //#region getSpecificUserData
-//esta funcion trae de la API solo las propiedades especificadas por parametro de los usuarios.
-//el valor recibido es un objeto con las propiedades que se quiere pedir con valor 1
-export const getSpecificUserData = async (specificData) => {
+//trae de la API el listado de usuarios (nombre y email) para el selector de pacientes
+export const getSpecificUserData = async () => {
   try {
-    const response = await axios.post(`${BASE_URL}/users`, specificData);
+    const response = await axios.get(`${BASE_URL}/users`);
     return response;
   } catch (error) {
     return error;

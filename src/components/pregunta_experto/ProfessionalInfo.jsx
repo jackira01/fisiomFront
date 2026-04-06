@@ -3,35 +3,39 @@ import { CustomButton } from '@/features/ui';
 import Link from 'next/link';
 
 const ProfessionalInfo = ({ professional }) => {
+  const fullName = `${professional.firstname ?? ''} ${professional.lastname ?? ''}`.trim();
+  const displayName = fullName || professional.name || 'Profesional';
+
   return (
-    <div className="grid grid-cols-2 items-center justify-center place-items-center gap-2 sm:grid-cols-none">
+    <div className="shrink-0 flex sm:flex-col items-center gap-3 sm:gap-2 bg-primary-50 border border-primary-100 rounded-xl px-3 py-3 sm:w-[120px]">
       <Image
         src={professional.image}
-        alt={`Doctor ${professional.name} photo`}
-        className="rounded-full size-14 bg-cover basis-2/5"
+        alt={`Dr. ${displayName} foto`}
+        className="rounded-full size-14 object-cover shrink-0"
+        fallbackSrc="/imgPerfil.png"
       />
-      <div className="flex flex-col max-w-28 gap-1 w-full">
-        <p className="font-bold capitalize truncate">
-          {'Dr. ' + professional.name}
+      <div className="flex flex-col gap-1.5 min-w-0 sm:items-center sm:text-center w-full">
+        <p className="text-xs font-bold text-secondary-800 capitalize truncate w-full">
+          {'Dr. ' + displayName}
         </p>
-        <div className="divide-y-1">
-          <CustomButton
-            as={Link}
-            target="_blank"
-            href={`/servicios/${professional._id}/perfil`}
-            className="py-0 w-full rounded-sm font-normal"
-          >
-            Ver perfil
-          </CustomButton>
-          <CustomButton
-            as={Link}
-            target="_blank"
-            href={`/servicios/${professional._id}/turno`}
-            className="py-0 w-full rounded-sm font-normal"
-          >
-            CITA
-          </CustomButton>
-        </div>
+        <CustomButton
+          as={Link}
+          target="_blank"
+          href={`/servicios/${professional._id}/perfil`}
+          size="sm"
+          className="h-7 min-w-0 w-full text-xs rounded-md font-medium px-2 bg-primary-500 text-white"
+        >
+          Ver perfil
+        </CustomButton>
+        <CustomButton
+          as={Link}
+          target="_blank"
+          href={`/servicios/${professional._id}/turno`}
+          size="sm"
+          className="h-7 min-w-0 w-full text-xs rounded-md font-medium px-2 bg-white border border-primary-300 text-primary-700"
+        >
+          Agendar cita
+        </CustomButton>
       </div>
     </div>
   );

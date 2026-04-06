@@ -26,6 +26,10 @@ const ServicioMain = () => {
   const [filters, setFilters] = useAtom(filtersAtom);
 
   const location = useGeolocation();
+  // Serializar las coordenadas para evitar re-renders por nueva referencia de objeto
+  const locationKey = Array.isArray(location.user) && location.user.some(Boolean)
+    ? location.user.join(',')
+    : '';
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -39,10 +43,7 @@ const ServicioMain = () => {
           city: filters.city,
           country: filters.country,
           specialtyId: filters.specialtyId,
-          position:
-            Array.isArray(location.user) && location.user.some(Boolean)
-              ? location.user.join(",")
-              : "",
+          position: locationKey,
           page: filters.page,
         });
 
@@ -72,7 +73,7 @@ const ServicioMain = () => {
 
     fetchProfessionals();
     return () => abortController.abort();
-  }, [filters, location]);
+  }, [filters, locationKey]);
 
   useEffect(() => {
     isInView &&
@@ -83,11 +84,11 @@ const ServicioMain = () => {
   return (
     <main
       id="main"
-      className="vstack px-auto mx-auto max-w-8xl w-full flex flex-col py-4 gap-4"
+      className="vstack px-auto mx-auto max-w-8xl w-full flex flex-col py-6 gap-5"
     >
       <SearchProfesional />
-      <div className="grid lg:grid-cols-2 gap-5">
-        <div className="flex flex-col gap-2 items-center size-full h-[80vh] overflow-y-auto overflow-x-hidden">
+      <div className="grid lg:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-2 size-full h-[80vh] overflow-y-auto overflow-x-hidden pr-1">
           {(professionals.length || !loading) && (
             <ServicioMainContainer profesionales={professionals} />
           )}
@@ -96,7 +97,7 @@ const ServicioMain = () => {
           </div>
         </div>
 
-        <div className="min-h-[80vh] w-full">
+        <div className="min-h-[80vh] w-full rounded-2xl overflow-hidden border border-default-100 shadow-sm">
           <CustomMap markers={professionals} setMarkers={setProfessionals} />
         </div>
       </div>

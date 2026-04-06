@@ -37,8 +37,9 @@ const SearchProfesional = () => {
   const cities = getCitiesForState(states, filters.state);
 
   return (
-    <div className="w-full flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-5 p-5 rounded-md">
+    <div className="w-full flex flex-col gap-2 bg-white border border-default-100 rounded-2xl shadow-sm px-5 py-4">
+      <p className="text-xs font-semibold text-default-400 uppercase tracking-widest mb-1">Buscar profesionales</p>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
         <SearchInput />
         <SearchSpecialty specialties={specialties} />
         {/* key fuerza remount del Autocomplete cuando el valor se limpia externamente (chip) */}

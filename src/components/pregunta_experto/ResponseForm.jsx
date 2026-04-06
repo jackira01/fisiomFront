@@ -74,8 +74,8 @@ const ResponseForm = ({ questionId, user, creatorId }) => {
           </button>
         }
         classNames={{
-          input: 'px-1',
-          inputWrapper: '!bg-white border-1 border-[#BABABA] rounded-none',
+          input: 'px-1 text-sm',
+          inputWrapper: '!bg-white border border-primary-200 rounded-lg hover:border-primary-400 transition-colors',
         }}
       />
     </form>

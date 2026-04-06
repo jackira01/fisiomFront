@@ -33,9 +33,9 @@ const PreguntaExpertoPage = async () => {
     hasMoreToLoad,
     query: iniQuery,
   };
-  
+
   return (
-    <main className="p-4 min-h-[92vh] w-full max-w-4xl flex flex-col items-center mx-auto gap-4 overflow-hidden">
+    <main className="p-4 pt-6 min-h-[92vh] w-full max-w-3xl flex flex-col items-center mx-auto gap-4 overflow-hidden">
       <PreguntaExpertoClient initialData={initialData} />
     </main>
   );

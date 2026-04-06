@@ -4,7 +4,6 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { Button } from '@nextui-org/react';
 import { CgAttachment } from 'react-icons/cg';
 import { IoAlertCircleOutline } from 'react-icons/io5';
-import { MdCheckCircleOutline } from 'react-icons/md';
 
 import {
   workWithUsSchema,
@@ -13,6 +12,30 @@ import {
 import { sendJobPostulation } from '@/services/mails';
 import { formikZodValidator } from '@/utils/validations';
 import toast from 'react-hot-toast';
+
+const inputClass =
+  'w-full px-4 py-2.5 bg-white text-gray-800 rounded-lg border border-gray-200 outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-100 placeholder:text-gray-400';
+
+const FieldError = ({ name }) => (
+  <ErrorMessage name={name}>
+    {(msg) => (
+      <span className="flex items-center gap-1 text-sm text-danger-500 mt-0.5">
+        <IoAlertCircleOutline className="shrink-0" />
+        {msg}
+      </span>
+    )}
+  </ErrorMessage>
+);
+
+const FormGroup = ({ label, hint, children }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-semibold text-gray-700">
+      {label}
+      {hint && <span className="ml-1 text-xs font-normal text-gray-400">{hint}</span>}
+    </label>
+    {children}
+  </div>
+);
 
 const FileInput = ({ fileName, setFileName, setFieldValue }) => {
   const handleFileChange = (event) => {
@@ -24,24 +47,25 @@ const FileInput = ({ fileName, setFileName, setFieldValue }) => {
   };
 
   return (
-    <div className="relative w-full h-fit">
+    <label className="flex items-center gap-0 rounded-lg border border-gray-200 bg-white overflow-hidden cursor-pointer transition-colors hover:border-primary-400 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100">
       <input
         type="text"
         value={fileName}
         readOnly
-        placeholder="Selecciona un archivo PDF"
-        className="w-full px-3 py-2 bg-[#F1F1F1] text-gray-700 rounded-sm border outline-none border-[#DCDCDC]"
+        placeholder="Selecciona un archivo PDF (máx. 1 MB)"
+        className="flex-1 px-4 py-2.5 bg-transparent text-gray-700 outline-none placeholder:text-gray-400 text-sm cursor-pointer"
       />
-      <label className="absolute top-0 right-0 p-2 bg-[#F1F1F1] border border-[#DCDCDC] h-full rounded-sm cursor-pointer">
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <CgAttachment className="text-primary-400 size-full" />
-      </label>
-    </div>
+      <span className="flex items-center gap-1.5 px-4 py-2.5 bg-primary-50 border-l border-gray-200 text-primary-600 text-sm font-medium whitespace-nowrap">
+        <CgAttachment className="text-lg" />
+        Adjuntar
+      </span>
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+    </label>
   );
 };
 
@@ -64,128 +88,108 @@ const TrabajaConNosotrosClient = () => {
   };
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validate={formikZodValidator(workWithUsSchema)}
-      onSubmit={handleSubmit}
-    >
-      {({ errors, isSubmitting, setFieldValue }) => (
-        <Form className="w-full grid md:grid-cols-2 gap-y-6 md:gap-x-14">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="documentType" className="font-bold">
-                Tipo de documento
-              </label>
-              <input
-                placeholder="DNI"
-                readOnly
-                className="px-3 py-2 bg-[#F1F1F1] rounded-sm border outline-none border-[#DCDCDC] placeholder:text-slate-600 placeholder:font-medium"
-              />
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-10">
+      <Formik
+        initialValues={initialValues}
+        validate={formikZodValidator(workWithUsSchema)}
+        onSubmit={handleSubmit}
+      >
+        {({ errors, isSubmitting, setFieldValue }) => (
+          <Form className="w-full grid md:grid-cols-2 gap-8 md:gap-x-12">
+            {/* Columna izquierda */}
+            <div className="flex flex-col gap-5">
+              <div className="pb-2 border-b border-gray-100">
+                <h2 className="text-base font-bold text-gray-800">Datos personales</h2>
+              </div>
+
+              <FormGroup label="Tipo de documento">
+                <input
+                  value="DNI"
+                  readOnly
+                  className={`${inputClass} bg-gray-50 text-gray-500 cursor-not-allowed`}
+                />
+              </FormGroup>
+
+              <FormGroup label="Número de documento">
+                <Field
+                  name="dniNumber"
+                  placeholder="12345678"
+                  className={inputClass}
+                />
+                <FieldError name="dniNumber" />
+              </FormGroup>
+
+              <FormGroup label="Número de teléfono" hint="(sin espacios ni guiones)">
+                <Field
+                  name="phone"
+                  placeholder="+5491122334455"
+                  className={inputClass}
+                />
+                <FieldError name="phone" />
+              </FormGroup>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="dniNumber" className="font-bold">
-                Numero de documento
-              </label>
-              <Field
-                name="dniNumber"
-                placeholder="12345678"
-                className="px-3 py-2 bg-[#F1F1F1] text-gray-950 rounded-sm border outline-none border-[#DCDCDC] focus:border-gray-400"
-              />
-              <ErrorMessage
-                name="dniNumber"
-                component="span"
-                className="text-danger-500"
-              />
+            {/* Columna derecha */}
+            <div className="flex flex-col gap-5">
+              <div className="pb-2 border-b border-gray-100">
+                <h2 className="text-base font-bold text-gray-800">Información de contacto</h2>
+              </div>
+
+              <FormGroup label="Email">
+                <Field
+                  name="email"
+                  type="email"
+                  placeholder="ejemplo@correo.com"
+                  className={inputClass}
+                />
+                <FieldError name="email" />
+              </FormGroup>
+
+              <FormGroup label="Curriculum Vitae">
+                <FileInput
+                  fileName={fileName}
+                  setFileName={setFileName}
+                  setFieldValue={setFieldValue}
+                />
+                {errors.curriculum && (
+                  <span className="flex items-center gap-1 text-sm text-danger-500 mt-0.5">
+                    <IoAlertCircleOutline className="shrink-0" />
+                    {errors.curriculum}
+                  </span>
+                )}
+              </FormGroup>
+
+              <FormGroup label="Mensaje">
+                <Field
+                  name="message"
+                  as="textarea"
+                  placeholder="Contanos sobre vos, tu experiencia y por qué querés unirte al equipo..."
+                  spellCheck={true}
+                  rows={5}
+                  className={`${inputClass} resize-none`}
+                />
+                <FieldError name="message" />
+              </FormGroup>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="phone" className="font-bold">
-                Numero de teléfono{' '}
-                <span className="text-sm font-normal">(sin espacios)</span>
-              </label>
-              <Field
-                name="phone"
-                placeholder="+511122334455"
-                className="px-3 py-2 bg-[#F1F1F1] text-gray-700 rounded-sm border outline-none border-[#DCDCDC] focus:border-gray-400"
-              />
-              <ErrorMessage
-                name="phone"
-                component="span"
-                className="text-danger-500"
-              />
+            {/* Submit */}
+            <div className="md:col-span-2 flex flex-col sm:flex-row-reverse items-center gap-3 pt-2 border-t border-gray-100">
+              <Button
+                type="submit"
+                isDisabled={Object.keys(errors).length > 0 || isSubmitting}
+                isLoading={isSubmitting}
+                className="w-full sm:w-auto px-10 py-3 bg-primary-600 hover:bg-primary-700 font-semibold text-white text-sm uppercase tracking-wider rounded-xl transition-colors disabled:opacity-50"
+              >
+                Enviar solicitud
+              </Button>
+              <p className="text-xs text-gray-400 text-center sm:text-left">
+                Revisaremos tu solicitud y te contactaremos a la brevedad.
+              </p>
             </div>
-
-            <Button
-              type="submit"
-              isDisabled={Object.keys(errors).length > 0 || isSubmitting}
-              className="hidden mt-auto bg-primary-500 font-bold text-white uppercase rounded-sm w-full md:block"
-            >
-              enviar
-            </Button>
-          </div>
-
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="email" className="font-bold">
-                Email
-              </label>
-              <Field
-                name="email"
-                placeholder="example@mail.com"
-                className="px-3 py-2 bg-[#F1F1F1] text-gray-700 rounded-sm border outline-none border-[#DCDCDC] focus:border-gray-400"
-              />
-              <ErrorMessage
-                name="email"
-                component="span"
-                className="text-danger-500"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label htmlFor="curriculum" className="font-bold">
-                Agrega tu CV
-              </label>
-              <FileInput
-                fileName={fileName}
-                setFileName={setFileName}
-                setFieldValue={setFieldValue}
-              />
-              {errors.curriculum && (
-                <span className="text-danger-500"> {errors.curriculum}</span>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label htmlFor="message" className="font-bold">
-                Mensaje
-              </label>
-              <Field
-                name="message"
-                as="textarea"
-                placeholder="Corta presentación..."
-                spellCheck={true}
-                rows={4}
-                className="resize-none px-3 py-2 bg-[#F1F1F1] text-gray-700 rounded-sm border outline-none border-[#DCDCDC] focus:border-gray-400"
-              />
-              <ErrorMessage
-                name="message"
-                component="span"
-                className="text-danger-500"
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            isDisabled={Object.keys(errors).length > 0 || isSubmitting}
-            className="bg-primary-500 font-bold text-white uppercase rounded-sm w-full md:hidden"
-          >
-            enviar
-          </Button>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+    </div>
   );
 };
 

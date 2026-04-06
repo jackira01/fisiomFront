@@ -56,7 +56,7 @@ const ProductosPageClient = () => {
 
   // Si el catálogo está habilitado, mostrar la lista de productos
   return (
-    <main className="vstack px-auto mx-auto max-w-8xl w-full items-center gap-6 my-5">
+    <main className="vstack px-auto mx-auto max-w-8xl w-full gap-8 py-8">
       <SearchProd filter={filter} setFilter={setFilter} setPage={setPage} />
       <ProductCardContainer productos={productos} />
       <Paginate page={page} total={totalPages} setPage={setPage} />

@@ -91,32 +91,108 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        // user = { user: { ...MongoDB doc... }, token: 'JWT string...', refreshToken: '...' }
-        const userData = user.user || {};
-        token.accessToken = user.token; // Token JWT de la API
-        token.refreshToken = user.refreshToken; // Refresh token para renovar el acceso
-        token.id = userData._id;
-        token.role = userData.role;
-        token.name =
-          `${userData.firstname || ''} ${userData.lastname || ''}`.trim() ||
-          userData.username ||
-          '';
-        token.image = userData.image || '';
-        token.email = userData.email || '';
-
-        // Decodificar expiración del token JWT de la API (payload.exp en segundos)
+    async signIn({ user, account, profile }) {
+      // Para Google, llamar al backend para crear/buscar usuario y obtener tokens
+      if (account?.provider === 'google') {
         try {
-          const payload = JSON.parse(
-            Buffer.from(user.token.split('.')[1], 'base64url').toString()
-          );
-          token.apiTokenExpires = payload.exp * 1000; // convertir a ms
-        } catch {
-          token.apiTokenExpires = Date.now() + 60 * 60 * 1000; // fallback 1h
-        }
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: profile?.email,
+              name: profile?.name,
+            }),
+          });
 
-        delete token.error;
+          if (!res.ok) return false;
+
+          const data = await res.json();
+
+          // Adjuntar datos del backend al objeto user para el callback jwt
+          user.backendUser = data.user;
+          user.backendToken = data.token;
+          user.backendRefreshToken = data.refreshToken;
+
+          // Guardar cookies de tokens
+          const cookieStore = cookies();
+          cookieStore.set({
+            name: 'accessToken',
+            value: data.token,
+            httpOnly: true,
+            secure: process.env.NEXT_PUBLIC_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: data.tokenExpiresInSeg,
+            path: '/',
+          });
+          cookieStore.set({
+            name: 'refreshToken',
+            value: data.refreshToken,
+            httpOnly: true,
+            secure: process.env.NEXT_PUBLIC_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: data.refreshExpiresInSeg,
+            path: '/',
+          });
+
+          return true;
+        } catch (error) {
+          console.error('Error en signIn con Google:', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
+      if (user) {
+        if (account?.provider === 'google') {
+          // Flujo Google: usar datos del backend adjuntados en signIn
+          const userData = user.backendUser || {};
+          token.accessToken = user.backendToken;
+          token.refreshToken = user.backendRefreshToken;
+          token.id = userData._id;
+          token.role = userData.role;
+          token.name =
+            `${userData.firstname || ''} ${userData.lastname || ''}`.trim() ||
+            userData.username ||
+            '';
+          token.image = userData.image || '';
+          token.email = userData.email || '';
+
+          try {
+            const payload = JSON.parse(
+              Buffer.from(user.backendToken.split('.')[1], 'base64url').toString()
+            );
+            token.apiTokenExpires = payload.exp * 1000;
+          } catch {
+            token.apiTokenExpires = Date.now() + 60 * 60 * 1000;
+          }
+
+          delete token.error;
+        } else {
+          // Flujo Credentials: estructura existente
+          const userData = user.user || {};
+          token.accessToken = user.token;
+          token.refreshToken = user.refreshToken;
+          token.id = userData._id;
+          token.role = userData.role;
+          token.name =
+            `${userData.firstname || ''} ${userData.lastname || ''}`.trim() ||
+            userData.username ||
+            '';
+          token.image = userData.image || '';
+          token.email = userData.email || '';
+
+          try {
+            const payload = JSON.parse(
+              Buffer.from(user.token.split('.')[1], 'base64url').toString()
+            );
+            token.apiTokenExpires = payload.exp * 1000;
+          } catch {
+            token.apiTokenExpires = Date.now() + 60 * 60 * 1000;
+          }
+
+          delete token.error;
+        }
       }
 
       // Si el access token no ha expirado, devolverlo tal cual

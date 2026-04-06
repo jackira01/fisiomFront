@@ -52,26 +52,35 @@ export const getBlogDetail = async (blogId) => {
   return data;
 };
 
-export const createBlog = async (newBlog) => {
+export const createBlog = async (newBlog, token) => {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const { data, status } = await axios.post(`${BASE_URL}/blogs/create`, newBlog, {
     withCredentials: true,
+    headers,
   });
   if (status !== 200) throw new Error('Error fetching blogs');
   return data;
 };
 
-export const updateBlog = async (blogId, updatedBlog) => {
+export const updateBlog = async (blogId, updatedBlog, token) => {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const { data, status } = await axios.put(`${BASE_URL}/blogs/update/${blogId}`, updatedBlog, {
     withCredentials: true,
+    headers,
   });
   if (status !== 200) throw new Error('Error fetching blogs');
   return data;
 };
 
 // ? Logic delete
-export const deleteBlog = async (blogId) => {
+export const deleteBlog = async (blogId, token) => {
+  const headers = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   const { data, status } = await axios.patch(`${BASE_URL}/blogs/status/${blogId}`, { status: false }, {
     withCredentials: true,
+    headers,
   });
   if (status !== 200) throw new Error('Error fetching blogs');
   return data;

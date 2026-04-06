@@ -65,7 +65,7 @@ const EditProfessionalMain = ({
 
       const payload = getFormdataFromObj({
         ...newValues,
-        ...(imageUrl && { image: imageUrl, id_image: imagePublicId }),
+        ...(imageUrl && { image: imageUrl }),
       });
       // Eliminar el File del payload — el backend ya no lo necesita
       payload.delete('image');

@@ -67,7 +67,7 @@ const BlogForm = ({
         type_id: values.type_id,
         image: secure_url,
         id_image: public_id,
-      });
+      }, session?.user?.accessToken);
       // * Clears content of editor from tiptap
       if (editorRef) editorRef.current?.commands.clearContent(true);
       resetForm();

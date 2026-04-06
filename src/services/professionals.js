@@ -70,8 +70,8 @@ export const getProfessionals = async (filters = {}) => {
     );
 
     // Filter only professional users and transform data to match frontend expectations
+    // El backend ya filtra por role=professional, no es necesario re-filtrar en cliente
     const transformedUsers = (response.data.users || [])
-      .filter(user => user.role === 'professional')
       .map(user => {
         return {
           ...user,

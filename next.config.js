@@ -10,18 +10,18 @@ const nextConfig = (phase, { defaultConfig }) => ({
       ? ext.concat(ext.map((item) => "dev." + item))
       : ext,
   images: {
-    // NOTE: https://github.com/vercel/next.js/issues/54482
     unoptimized: true,
+    formats: ["image/avif", "image/webp"],
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // !! WARN !!
-    // Dangerously allow production builds to successfully complete even if
-    // your project has type errors.
-    // !! WARN !!
     ignoreBuildErrors: true,
+  },
+  // Reducir el uso de memoria del compilador en desarrollo
+  experimental: {
+    webpackMemoryOptimizations: true,
   },
 });
 

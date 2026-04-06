@@ -59,7 +59,7 @@ function QuestionForm() {
         handleBlur,
         handleChange,
       }) => (
-        <Form className="w-full flex flex-col gap-4">
+        <Form className="w-full flex flex-col gap-3 bg-white border border-primary-100 rounded-2xl p-5 shadow-sm">
           <Select
             size="md"
             variant="bordered"
@@ -98,11 +98,11 @@ function QuestionForm() {
           />
           <CustomButton
             type="submit"
-            className="max-w-52 uppercase !bg-[#3DAADD] rounded-sm"
+            className="max-w-52 uppercase font-semibold tracking-wide rounded-lg bg-primary-500 text-white shadow-sm hover:bg-primary-600 transition-colors"
             isDisabled={Object.keys(errors).length > 0 || isSubmitting}
             isLoading={isSubmitting}
           >
-            {isSubmitting ? 'Enviando' : 'Enviar'}
+            {isSubmitting ? 'Enviando...' : 'Enviar pregunta'}
           </CustomButton>
         </Form>
       )}

@@ -10,7 +10,28 @@ const StarRatings = dynamic(() => import("react-star-ratings"), {
   ssr: false,
 });
 
+const hashToIndex = (str = '', max = 100) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  }
+  return hash % max;
+};
+
+const getAvatarUrl = (id) => {
+  const index = hashToIndex(id);
+  const gender = index % 2 === 0 ? 'men' : 'women';
+  const num = Math.floor(index / 2);
+  return `https://randomuser.me/api/portraits/${gender}/${num}.jpg`;
+};
+
+const getProfileImage = (image, id) => {
+  if (image && image.startsWith('http')) return image;
+  return getAvatarUrl(id);
+};
+
 const ServicioMainCardSmall = ({ profesional }) => {
+  const avatarSrc = getProfileImage(profesional.image, profesional._id);
   return (
     <div className="flex flex-col ">
       <Card className="border-none bg-background/60 w-full dark:bg-default-100/50  rounded-r-none lg:rounded">
@@ -18,7 +39,7 @@ const ServicioMainCardSmall = ({ profesional }) => {
           <div className="flex flex-col">
             <div className="flex items-center p-2 gap-4">
               <Avatar
-                src={profesional.image || "/doctor-ejemplo.png"}
+                src={avatarSrc}
                 className="w-20 h-20 text-large"
               />
               <div className="flex flex-col gap-0">
@@ -28,19 +49,19 @@ const ServicioMainCardSmall = ({ profesional }) => {
                 <div className="flex flex-wrap gap-1">
                   {profesional.specialties.length
                     ? profesional.specialties.map((specialty) => (
-                        <div key={specialty._id}>
-                          <Chip
-                            className="bg-primary-300"
-                            variant="faded"
-                            size="sm"
-                            startContent={<FaUserDoctor />}
-                          >
-                            <p className="text-small text-foreground/80">
-                              {specialty.name}
-                            </p>
-                          </Chip>
-                        </div>
-                      ))
+                      <div key={specialty._id}>
+                        <Chip
+                          className="bg-primary-300"
+                          variant="faded"
+                          size="sm"
+                          startContent={<FaUserDoctor />}
+                        >
+                          <p className="text-small text-foreground/80">
+                            {specialty.name}
+                          </p>
+                        </Chip>
+                      </div>
+                    ))
                     : null}
                   <div className="w-full"></div>
                   <div className="pl-2">
